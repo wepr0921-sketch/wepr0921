@@ -6,7 +6,7 @@
   <title>반짝반짝 다정한 말 놀이터 ✨</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: 윤고딕의 깔끔함을 대체할 Noto Sans KR 굵은 서체 로드 -->
+  <!-- Google Fonts: 윤고딕 스타일을 보완할 깔끔하고 볼드한 Noto Sans KR 로드 -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
   
   <style>
@@ -71,7 +71,7 @@
       background: linear-gradient(135deg, #38bdf8, #4f46e5);
       z-index: 2;
     }
-    /* 앞면(뒤집혀서 보이는 한글/그림 내용) - 180도 돌려서 대기시킴으로써 뒤집었을 때 글씨가 똑바로 보이게 함 */
+    /* 앞면(뒤집혀서 보이는 한글/그림 내용) */
     .card-back {
       transform: rotateY(180deg);
       background-color: #ffffff;
@@ -352,15 +352,28 @@
       }
     };
 
-    // 브라우저 낭독 기능 (TTS) - 글자를 잘못 읽는 어린아이 복습 배려
-    const speakWord = (text) => {
+    // 브라우저 낭독 기능 (TTS) - 음성 종료 콜백 탑재로 자연스러운 팝업 유도
+    // 레이트속도를 1.15로 높이고 자연스럽고 부드럽게 빨리 읽어주도록 개선
+    const speakWord = (text, onEndCallback) => {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ko-KR';
-        utterance.rate = 0.85; // 천천히 정독하여 확실하게 들려줌
-        utterance.pitch = 1.25; // 아기자기한 귀여운 하이톤
+        utterance.rate = 1.15; // 7살 집중력에 맞는 부드럽고 경쾌한 1.15배속 설정
+        utterance.pitch = 1.05; // 쇳소리를 죽인 자연스러운 음역대
+        
+        if (onEndCallback) {
+          utterance.onend = () => {
+            // 목소리가 완벽히 끝난 후 콜백 실행
+            onEndCallback();
+          };
+        }
         window.speechSynthesis.speak(utterance);
+      } else {
+        // 브라우저 미지원 시 딜레이 폴백
+        if (onEndCallback) {
+          setTimeout(onEndCallback, 1500);
+        }
       }
     };
 
@@ -412,8 +425,8 @@
       showScreen('screen-end');
     };
 
-    // --- STREAMING_CHUNK: Initializing Game 1 (Tree Game) logic ---
-    // --- [놀이 1] 다정한 말 열매 나무 (다정한말 3, 나쁜말 3 완벽 구현) ---
+    // --- STREAMING_CHUNK: Initializing Tree Game (Game 1) logic ---
+    // --- [놀이 1] 다정한 말 열매 나무 (다정한말 3, 나쁜말 3) ---
     const fruitData = [
       { id: 1, text: "사랑해", isKind: true, emoji: "❤️" },
       { id: 2, text: "고마워", isKind: true, emoji: "🍊" },
@@ -434,13 +447,12 @@
       remainingKindFruits = fruitData.filter(f => f.isKind).length;
       document.getElementById('tree-target').textContent = remainingKindFruits;
 
-      // 6개 열매를 겹치지 않게 나무 상단에 넉넉히 배치
+      // 6개 열매를 겹치지 않게 나무 상단에 배치
       const positions = [
         { x: 35, y: 30 }, { x: 130, y: 20 }, { x: 220, y: 35 },
         { x: 80, y: 100 }, { x: 180, y: 90 }, { x: 120, y: 165 }
       ];
 
-      // 무작위 순서 매칭
       const shuffledPositions = [...positions].sort(() => Math.random() - 0.5);
 
       fruitData.forEach((fruit, idx) => {
@@ -467,7 +479,6 @@
         element.innerHTML = `💖 <span class="text-xs">${fruit.text}</span>`;
         
         playSound('success');
-        speakWord(fruit.text);
         
         addScore(10);
         remainingKindFruits--;
@@ -476,30 +487,34 @@
         const guide = document.getElementById('tree-guide');
         guide.textContent = `💖 "${fruit.text}"! 참 좋은 말이에요!`;
 
-        if (remainingKindFruits === 0) {
-          setTimeout(() => {
-            alertModal("🌳 나무가 튼튼해졌어요!", "모든 예쁜 열매를 바구니에 담았어요!", () => {
-              finishGame();
-            });
-          }, 800);
-        }
+        // TTS 낭독이 끝난 후에만 알림 팝업이 노출되도록 제어
+        speakWord(fruit.text, () => {
+          if (remainingKindFruits === 0) {
+            setTimeout(() => {
+              alertModal("🌳 나무가 튼튼해졌어요!", "모든 예쁜 열매를 바구니에 담았어요!", () => {
+                finishGame();
+              });
+            }, 300);
+          }
+        });
       } else {
         // 나쁜 말 클릭 시 흔들림 애니메이션 효과 및 피드백 제공
         element.classList.add('animate-shake', 'bg-rose-50', 'border-rose-400');
         playSound('fail');
-        speakWord(fruit.text);
         
         const guide = document.getElementById('tree-guide');
         guide.textContent = `😢 "${fruit.text}"은 친구의 마음을 시무룩하게 만들어요.`;
         
-        setTimeout(() => {
-          element.classList.remove('animate-shake', 'bg-rose-50', 'border-rose-400');
-        }, 1000);
+        speakWord(fruit.text, () => {
+          setTimeout(() => {
+            element.classList.remove('animate-shake', 'bg-rose-50', 'border-rose-400');
+          }, 300);
+        });
       }
     };
 
-    // --- STREAMING_CHUNK: Initializing Game 2 (Card Matching Game) logic ---
-    // --- [놀이 2] 다정한 카드 맞추기 (동일한 카드 2장씩 매칭하도록 리뉴얼) ---
+    // --- STREAMING_CHUNK: Initializing Card Game (Game 2) logic ---
+    // --- [놀이 2] 다정한 카드 맞추기 (동일 카드 2장씩 매칭) ---
     const cardSvgAssets = {
       thankYou: `
         <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
@@ -532,7 +547,6 @@
           <circle cx="50" cy="50" r="45" fill="#FEF3C7" stroke="#FBBF24" stroke-width="2"/>
           <circle cx="50" cy="44" r="18" fill="#FBBF24" stroke="#D97706" stroke-width="2"/>
           <path d="M 42 70 L 35 85 L 50 78 L 65 85 L 58 70 Z" fill="#EF4444" stroke="#B91C1C" stroke-width="1.5"/>
-          <path d="M 45 48 L 45 42 Q 45 37 49 37 Q 53 37 52 44 L 54 44 Q 57 44 57 47 Q 57 50 54 50 L 53 50" stroke="#78350F" stroke-width="2.5" stroke-linecap="round" fill="none"/>
           <circle cx="50" cy="44" r="12" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
           <path d="M 49 38 L 51 42 L 56 42 L 52 45 L 54 49 L 49 46 L 44 49 L 46 45 L 42 42 L 47 42 Z" fill="#F59E0B"/>
         </svg>
@@ -561,12 +575,10 @@
 
       const deck = [];
       cardDataRaw.forEach((item, index) => {
-        // 단어와 그림이 모두 합쳐진 완전히 동일한 카드 2장씩 추가 (총 8장)
         deck.push({ id: `${index}-a`, text: item.text, value: index, svg: item.svg });
         deck.push({ id: `${index}-b`, text: item.text, value: index, svg: item.svg });
       });
 
-      // 무작위 셔플
       cardsDeck = deck.sort(() => Math.random() - 0.5);
 
       cardsDeck.forEach((card, index) => {
@@ -574,14 +586,11 @@
         cardBox.className = "relative h-28 cursor-pointer game-btn card-container";
         cardBox.dataset.index = index;
 
-        // 앞면은 비밀 반짝이, 뒷면은 일러스트 + 텍스트가 동시에 한 카드 안에 예쁘게 표시됩니다.
         cardBox.innerHTML = `
           <div class="card-inner w-full h-full relative">
-            <!-- 앞면 (카드 뒷면 대기 상태) -->
             <div class="card-front w-full h-full flex items-center justify-center">
               <span class="text-2xl text-yellow-300 font-extrabold">✨</span>
             </div>
-            <!-- 뒷면 (카드 앞면 오픈 상태 - 그림 + 글자 결합형) -->
             <div class="card-back w-full h-full flex flex-col items-center justify-center p-2 border-2 border-sky-300 bg-white rounded-2xl">
               <div class="w-12 h-12 flex items-center justify-center mb-1">${card.svg}</div>
               <span class="text-sm font-black text-slate-800 tracking-tight">${card.text}</span>
@@ -602,12 +611,12 @@
       element.classList.add('card-flipped');
       selectedCards.push({ index, element, data: cardsDeck[index] });
 
-      // 뒤집었을 때 카드의 다정한 단어를 읽어주어 말하기 학습을 유도합니다.
-      speakWord(cardsDeck[index].text);
-
-      if (selectedCards.length === 2) {
-        checkCardMatch();
-      }
+      // 카드 선택 시 한국어 낭독 수행
+      speakWord(cardsDeck[index].text, () => {
+        if (selectedCards.length === 2) {
+          checkCardMatch();
+        }
+      });
     };
 
     const checkCardMatch = () => {
@@ -628,11 +637,14 @@
         selectedCards = [];
 
         if (matchedCount === 4) {
-          setTimeout(() => {
-            alertModal("🃏 기억력이 너무 훌륭해요!", "모든 똑같은 다정한 말 카드의 짝을 찾았어요!", () => {
-              finishGame();
-            });
-          }, 1000);
+          // 글자를 모두 다 낭독한 이후에 성공 안내 축하 모달이 팝업되도록 이벤트 콜백 연결
+          speakWord(cardDataRaw[card1.data.value].text, () => {
+            setTimeout(() => {
+              alertModal("🃏 기억력이 너무 훌륭해요!", "모든 똑같은 다정한 말 카드의 짝을 찾았어요!", () => {
+                finishGame();
+              });
+            }, 300);
+          });
         }
       } else {
         const guide = document.getElementById('card-guide');
@@ -643,85 +655,77 @@
           card1.element.classList.remove('card-flipped');
           card2.element.classList.remove('card-flipped');
           selectedCards = [];
-        }, 1200);
+        }, 1000);
       }
     };
 
-    // --- STREAMING_CHUNK: Initializing Game 3 (Story Game) logic... ---
-    // --- [놀이 3] 토닥토닥 상황극 (아기자기한 SVG 일러스트 삽입) ---
+    // --- STREAMING_CHUNK: Initializing Story Game (Game 3) logic ---
+    // --- [놀이 3] 토닥토닥 상황극 (아동용 단축형 핵심 문장과 정교한 설명 최적화) ---
     const storyData = [
       {
         id: 1,
         illustration: `
           <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none">
             <circle cx="50" cy="50" r="45" fill="#FAF5FF" stroke="#D8B4FE" stroke-width="2"/>
-            <!-- 와르르 무너진 형형색색 블록 탑 -->
             <rect x="25" y="70" width="16" height="12" rx="2" fill="#F43F5E" stroke="#BE123C" stroke-width="1.5"/>
             <rect x="44" y="74" width="20" height="10" rx="2" fill="#3B82F6" stroke="#1D4ED8" stroke-width="1.5" transform="rotate(15 44 74)"/>
             <rect x="68" y="66" width="14" height="14" rx="2" fill="#10B981" stroke="#047857" stroke-width="1.5" transform="rotate(-25 68 66)"/>
             <polygon points="46,42 54,54 38,54" fill="#FBBF24" stroke="#D97706" stroke-width="1.5" transform="rotate(45 50 48)"/>
-            <!-- 우는 눈물방울 표정 -->
             <circle cx="38" cy="40" r="2" fill="#5B21B6"/>
             <circle cx="62" cy="40" r="2" fill="#5B21B6"/>
             <path d="M 44 48 Q 50 54 56 48" stroke="#5B21B6" stroke-width="2" stroke-linecap="round" fill="none"/>
           </svg>
         `,
-        text: "친구 마음이가 높이 쌓은 블록 탑이 와르르 무너져 속상해하고 있어요. 흑흑...",
+        text: "마음이의 블록 탑이 와르르 무너져 속상해하고 있어요.",
         choices: {
-          A: { text: "바보야, 좀 더 조심해서 쌓았어야지!", isCorrect: false },
-          B: { text: "정말 속상하겠다. 내가 다시 같이 쌓아줄게!", isCorrect: true }
+          A: { text: "바보야, 그것도 못 하니?", isCorrect: false },
+          B: { text: "정말 속상하겠다. 같이 다시 쌓자!", isCorrect: true }
         },
-        explain: "블록이 무너져 시무룩한 친구에게 속상한 마음을 따스하게 공감해주고 함께 도와준다면, 친구의 속상함이 눈 녹듯 사라질 거예요."
+        explain: "친구 슬픈 마음에 깊이 공감하고 함께 도와주면, 속상했던 마음이 눈 녹듯 사르르 풀려요!"
       },
       {
         id: 2,
         illustration: `
           <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none">
             <circle cx="50" cy="50" r="45" fill="#FFF5F5" stroke="#FECACA" stroke-width="2"/>
-            <!-- 아파하는 귀여운 얼굴과 눈물 뚝뚝 -->
             <circle cx="50" cy="52" r="24" fill="#FFE4E6"/>
             <circle cx="42" cy="48" r="2.5" fill="#BE123C"/>
             <circle cx="58" cy="48" r="2.5" fill="#BE123C"/>
-            <!-- 찡그린 우는 입 모양 -->
             <path d="M 44 60 Q 50 52 56 60" stroke="#BE123C" stroke-width="2.5" stroke-linecap="round" fill="none"/>
             <circle cx="36" cy="55" r="3" fill="#FDA4AF"/>
             <circle cx="64" cy="55" r="3" fill="#FDA4AF"/>
-            <!-- 뚝뚝 떨어지는 눈물방울 -->
             <path d="M 38 52 L 38 64 M 62 52 L 62 64" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
           </svg>
         `,
-        text: "친구 기쁨이가 운동장에서 달리기를 하다가 넘어졌어요. 다리가 아픈지 눈물이 핑그르르 돌아요.",
+        text: "기쁨이가 달리기를 하다가 넘어져 아파하고 있어요.",
         choices: {
-          A: { text: "많이 아프지? 괜찮아? 내가 보건실 같이 가줄게!", isCorrect: true },
-          B: { text: "에이 바보, 달리기도 제대로 못 하고 뒤뚱뒤뚱 넘어진대요!", isCorrect: false }
+          A: { text: "괜찮아? 많이 아프지? 내가 잡아줄게", isCorrect: true },
+          B: { text: "달리기도 제대로 못 한대요!", isCorrect: false }
         },
-        explain: "다쳐서 아픈 친구에게 장난이나 핀잔을 늘어놓는 것보다 다쳐서 놀란 마음을 가만히 두 손으로 잡아 주는 다정함이 최고예요."
+        explain: "놀리고 핀잔을 주는 대신 다쳐서 아픈 마음을 감싸주고 따뜻하게 걱정하는 태도가 최고예요!"
       },
       {
         id: 3,
         illustration: `
           <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none">
             <circle cx="50" cy="50" r="45" fill="#FEF3C7" stroke="#FDE68A" stroke-width="2"/>
-            <!-- 하트뿅뿅 곰인형 얼굴 그리기 -->
             <circle cx="50" cy="55" r="20" fill="#D97706"/>
             <circle cx="36" cy="38" r="7" fill="#B45309"/>
             <circle cx="64" cy="38" r="7" fill="#B45309"/>
             <ellipse cx="50" cy="62" rx="7" ry="5" fill="#FDE68A"/>
-            <!-- 조그만 코와 미소 -->
             <polygon points="48,59 52,59 50,61" fill="#78350F"/>
             <path d="M 47 64 Q 50 67 53 64" stroke="#78350F" stroke-width="1.5" fill="none"/>
             <circle cx="43" cy="50" r="2" fill="#000"/>
             <circle cx="57" cy="50" r="2" fill="#000"/>
-            <!-- 둥실 사랑 하트 일러스트 -->
             <path d="M 50 22 C 50 22 47 16 43 16 C 39 16 36 20 40 25 L 50 34 L 60 25 C 64 20 61 16 57 16 C 53 16 50 22 50 22 Z" fill="#EC4899" class="pulse-effect"/>
           </svg>
         `,
-        text: "사랑이가 가져온 귀여운 곰 인형을 나도 한번 포근하게 안아보며 놀고 싶어요.",
+        text: "사랑이가 안고 있는 귀여운 곰 인형을 나도 안아보고 싶어요.",
         choices: {
-          A: { text: "그거 이리 내놔! 나 한번만 만져볼래!", isCorrect: false },
-          B: { text: "곰 인형 정말 예쁘다. 한 번만 같이 안아봐도 될까?", isCorrect: true }
+          A: { text: "그거 이리 내놔! 나 먼저 만질 거야!", isCorrect: false },
+          B: { text: "인형 정말 예쁘다, 나도 빌려줄 수 있어?", isCorrect: true }
         },
-        explain: "강제로 물건을 빼앗지 않고, 상대방의 소중한 소유물을 존중하며 다정한 어조로 부탁을 나누는 태도가 교우관계의 기초랍니다."
+        explain: "강제로 빼앗지 않고, 소유를 존중하며 다정히 물어보고 차례를 지켜 나눠 노는 모습이 멋져요!"
       }
     ];
 
@@ -736,7 +740,6 @@
       const data = storyData[currentStoryIdx];
       document.getElementById('story-progress').textContent = currentStoryIdx + 1;
       
-      // 귀여운 정밀 일러스트 SVG 코드를 innerHTML에 그대로 삽입
       document.getElementById('story-illustration').innerHTML = data.illustration;
       document.getElementById('story-text').textContent = data.text;
       
@@ -754,12 +757,12 @@
       btnB.className = "game-btn w-full bg-white hover:bg-violet-50 text-slate-700 text-base font-bold py-3.5 px-4 rounded-2xl border-2 border-violet-200 hover:border-violet-300 custom-shadow flex items-center gap-2";
     };
 
+    // --- STREAMING_CHUNK: Handling Answer Selection and Event Dispatching... ---
+    // 목소리 낭독이 '완전히 끝난 뒤' 팝업을 노출시키는 중추 핸들러
     const chooseStoryAnswer = (choiceKey) => {
       const data = storyData[currentStoryIdx];
       const isCorrect = data.choices[choiceKey].isCorrect;
       const clickedBtn = choiceKey === 'A' ? document.getElementById('story-choice-a') : document.getElementById('story-choice-b');
-
-      speakWord(data.choices[choiceKey].text);
 
       if (isCorrect) {
         clickedBtn.classList.remove('border-violet-200', 'bg-white');
@@ -770,28 +773,37 @@
         
         document.getElementById('story-guide').textContent = "우와! 정말 듣기만 해도 행복해지는 답이었어요! 👍";
 
-        setTimeout(() => {
-          alertModal("💬 따뜻한 우리들!", data.explain, () => {
-            currentStoryIdx++;
-            if (currentStoryIdx < storyData.length) {
-              showStoryQuestion();
-            } else {
-              finishGame();
-            }
-          });
-        }, 1200);
+        // 중요: 정답 다정어 음성 재생이 완벽히 끝난 직후 팝업이 노출되도록 onEndCallback 탑재!
+        speakWord(data.choices[choiceKey].text, () => {
+          setTimeout(() => {
+            alertModal("💬 따뜻한 우리들!", data.explain, () => {
+              currentStoryIdx++;
+              if (currentStoryIdx < storyData.length) {
+                showStoryQuestion();
+              } else {
+                finishGame();
+              }
+            });
+          }, 300); // 낭독 끝난 후 자연스러운 0.3초 여백 뒤 팝업 등장
+        });
 
       } else {
         clickedBtn.classList.remove('border-violet-200', 'bg-white');
         clickedBtn.classList.add('border-rose-400', 'bg-rose-50', 'text-rose-800', 'animate-shake');
         
         playSound('fail');
-        document.getElementById('story-guide').textContent = "앗! 그 대답은 친구의 눈물이 가만히 쏟아지게 만들어요. 다른 말을 다시 찾을까요?";
+        document.getElementById('story-guide').textContent = "앗! 그 대답은 친구의 마음을 속상하게 해요. 다른 대답을 찾아볼까요?";
+        
+        // 오답 선택 시에도 피드백 목소리를 명확하게 들려줍니다.
+        speakWord(data.choices[choiceKey].text, () => {
+          setTimeout(() => {
+            clickedBtn.classList.remove('animate-shake');
+          }, 500);
+        });
       }
     };
 
-    // --- STREAMING_CHUNK: Setting up customized modal UI... ---
-    // --- 유치원용 예쁜 모달 팝업 레이어 (alert 차단 조항 대응) ---
+    // --- 유치원용 예쁜 모달 팝업 레이어 (alert 대체 수단) ---
     const alertModal = (title, message, callback) => {
       const modal = document.createElement('div');
       modal.className = "fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6";
@@ -831,7 +843,6 @@
       }
     };
 
-    // 로딩 디버깅 완료 로그
     window.onload = () => {
       console.log("반짝반짝 다정한 말 놀이터에 오신 것을 환영합니다.");
     };

@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>반짝반짝 다정한 말 놀이터 ✨</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: 윤고딕의 깔끔함을 대체할 Noto Sans KR 굵은 서체 로드 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'YoonGothic', 'Yoon Gothic', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      font-weight: 700;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .custom-shadow {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+    }
+    .game-btn {
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .game-btn:active {
+      transform: scale(0.94);
+    }
+    /* 둥실둥실 부드러운 애니메이션 */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(1.5deg); }
+    }
+    .floating-effect {
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes pulse-slow {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+    .pulse-effect {
+      animation: pulse-slow 2s ease-in-out infinite;
+    }
+    
+    /* 카드 뒤집기 3D 트랜지션 공간 정의 */
+    .card-container {
+      perspective: 1000px;
+    }
+    .card-inner {
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    /* 뒤집었을 때 180도 회전 */
+    .card-flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 1rem;
+    }
+    /* 뒷면(초기 물음표 카드) */
+    .card-front {
+      background: linear-gradient(135deg, #38bdf8, #4f46e5);
+      z-index: 2;
+    }
+    /* 앞면(뒤집혀서 보이는 한글/그림 내용) - 180도 돌려서 대기시킴으로써 뒤집었을 때 글씨가 똑바로 보이게 함 */
+    .card-back {
+      transform: rotateY(180deg);
+      background-color: #ffffff;
+      z-index: 1;
+    }
+    
+    /* 축하 꽃가루 가볍게 날리기 */
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+    /* 흔들림 에러 피드백 */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+    .animate-shake {
+      animation: shake 0.4s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-sky-50 to-emerald-100 min-h-screen flex flex-col items-center justify-between p-4 overflow-x-hidden relative">
+
+  <!-- Confetti Container -->
+  <div id="confetti-container" class="absolute inset-0 pointer-events-none overflow-hidden z-50"></div>
+
+  <header class="w-full max-w-md flex justify-between items-center bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl border-4 border-emerald-200 custom-shadow z-10">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl text-yellow-500">✨</span>
+      <h1 class="text-xl font-black text-emerald-700 tracking-tight">다정한 말 놀이터</h1>
+    </div>
+    <div class="flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border-2 border-emerald-200">
+      <span class="text-base text-yellow-500">⭐</span>
+      <span id="global-score" class="text-base font-bold text-emerald-800">0</span>
+    </div>
+  </header>
+
+  <!-- 메인 게임 콘텐츠 가변 카드 -->
+  <main id="game-container" class="w-full max-w-md my-auto flex flex-col items-center justify-center min-h-[520px] z-10">
+    
+    <!-- [화면 1] 메인 홈 화면 -->
+    <div id="screen-home" class="w-full bg-white rounded-[28px] border-8 border-emerald-200 p-6 flex flex-col items-center text-center custom-shadow gap-6">
+      <div class="floating-effect">
+        <!-- 메인 다정이 캐릭터 (SVG) -->
+        <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="45" fill="#E0F2FE" stroke="#38BDF8" stroke-width="4"/>
+          <!-- 귀여운 눈빛 -->
+          <circle cx="35" cy="45" r="5" fill="#0F172A"/>
+          <circle cx="65" cy="45" r="5" fill="#0F172A"/>
+          <circle cx="33" cy="43" r="1.5" fill="#FFFFFF"/>
+          <circle cx="63" cy="43" r="1.5" fill="#FFFFFF"/>
+          <!-- 볼터치 -->
+          <circle cx="27" cy="52" r="6" fill="#FDA4AF" opacity="0.8"/>
+          <circle cx="73" cy="52" r="6" fill="#FDA4AF" opacity="0.8"/>
+          <!-- 보조개 띤 입 -->
+          <path d="M 42 58 Q 50 66 58 58" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          <!-- 머리 위 새싹 장식 -->
+          <path d="M 50 15 C 50 15 46 8 40 10 C 36 11 38 18 50 17" fill="#4ADE80" stroke="#16A34A" stroke-width="1.5"/>
+          <path d="M 50 15 C 50 15 54 8 60 10 C 64 11 62 18 50 17" fill="#4ADE80" stroke="#16A34A" stroke-width="1.5"/>
+          <line x1="50" y1="16" x2="50" y2="24" stroke="#16A34A" stroke-width="2"/>
+        </svg>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-black text-slate-800 mb-1">안녕! 나는 다정이야!</h2>
+        <p class="text-base text-slate-600 font-bold leading-relaxed">우리 마음의 예쁜 생각들을 모아<br><span class="text-pink-500">💞 다정한 말</span>로 함께 복습해볼까?</p>
+      </div>
+
+      <!-- 놀이 메뉴 리스트 -->
+      <div class="w-full flex flex-col gap-3">
+        <button onclick="startGame('tree')" class="game-btn w-full bg-emerald-500 hover:bg-emerald-600 text-white text-lg font-bold py-3.5 px-6 rounded-2xl border-b-6 border-emerald-700 custom-shadow flex items-center justify-between">
+          <span>🌳 1. 다정한 열매 따기</span>
+          <span class="bg-white/20 text-xs px-2.5 py-1 rounded-full font-bold">출발!</span>
+        </button>
+        <button onclick="startGame('cards')" class="game-btn w-full bg-sky-500 hover:bg-sky-600 text-white text-lg font-bold py-3.5 px-6 rounded-2xl border-b-6 border-sky-700 custom-shadow flex items-center justify-between">
+          <span>🃏 2. 다정한 카드 뒤집기</span>
+          <span class="bg-white/20 text-xs px-2.5 py-1 rounded-full font-bold">출발!</span>
+        </button>
+        <button onclick="startGame('story')" class="game-btn w-full bg-violet-500 hover:bg-violet-600 text-white text-lg font-bold py-3.5 px-6 rounded-2xl border-b-6 border-violet-700 custom-shadow flex items-center justify-between">
+          <span>💬 3. 토닥토닥 상황극</span>
+          <span class="bg-white/20 text-xs px-2.5 py-1 rounded-full font-bold">출발!</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- [화면 2] 게임 1: 다정한 열매 나무 -->
+    <div id="screen-tree" class="w-full bg-white rounded-[28px] border-8 border-emerald-200 p-5 flex flex-col items-center text-center custom-shadow gap-4 hidden">
+      <div class="w-full flex justify-between items-center pb-2 border-b border-emerald-100">
+        <button onclick="goHome()" class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">🏠 처음으로</button>
+        <span class="text-sm font-bold text-slate-500">찾을 열매: <span id="tree-target" class="text-emerald-600 text-base">0</span>개</span>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-black text-emerald-700">🌳 다정한 열매만 따주세요!</h3>
+        <p class="text-xs text-slate-500 font-bold">나무에서 <span class="text-pink-500">듣기 좋은 다정한 말</span>만 모두 터치해요!</p>
+      </div>
+
+      <!-- 말랑이 나무 일러스트 & 열매 영역 -->
+      <div class="relative w-full h-[280px] bg-sky-50 rounded-2xl border-2 border-emerald-100 overflow-hidden flex items-center justify-center">
+        <!-- 나무 줄기/이파리 배경 SVG -->
+        <svg class="absolute bottom-0 w-72 h-64 z-0 opacity-90" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 46 100 L 46 65 Q 46 55 50 55 Q 54 55 54 65 L 54 100 Z" fill="#78350F" />
+          <circle cx="50" cy="40" r="28" fill="#15803D"/>
+          <circle cx="36" cy="48" r="20" fill="#16A34A"/>
+          <circle cx="64" cy="44" r="22" fill="#22C55E"/>
+          <circle cx="50" cy="26" r="18" fill="#4ADE80"/>
+        </svg>
+
+        <!-- 열매들 배치용 컨테이너 (6개 수량 제한) -->
+        <div id="fruit-container" class="absolute inset-0 z-10"></div>
+      </div>
+
+      <div id="tree-guide" class="text-base font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 w-full min-h-[44px] flex items-center justify-center">
+        열매를 콕 누르면 소리가 나요!
+      </div>
+    </div>
+
+    <!-- [화면 3] 게임 2: 다정한 카드 맞추기 -->
+    <div id="screen-cards" class="w-full bg-white rounded-[28px] border-8 border-sky-200 p-5 flex flex-col items-center text-center custom-shadow gap-4 hidden">
+      <div class="w-full flex justify-between items-center pb-2 border-b border-sky-100">
+        <button onclick="goHome()" class="text-sm font-bold text-sky-600 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">🏠 처음으로</button>
+        <span class="text-sm font-bold text-slate-500">맞춘 짝: <span id="card-matches" class="text-sky-600 text-base">0</span> / 4</span>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-black text-sky-700">🃏 똑같은 말 카드 찾기</h3>
+        <p class="text-xs text-slate-500 font-bold">두 장을 선택해 <span class="text-sky-500">똑같이 생긴 다정한 말 카드</span>의 짝을 맞춰봐요!</p>
+      </div>
+
+      <!-- 카드 그리드 판 (4x2 배열로 8장의 카드를 예쁘게 배치) -->
+      <div id="card-grid" class="grid grid-cols-4 gap-2 w-full max-w-sm py-2"></div>
+
+      <div id="card-guide" class="text-base font-bold text-sky-700 bg-sky-50 px-4 py-2 rounded-xl border border-sky-100 w-full min-h-[44px] flex items-center justify-center">
+        똑같이 생긴 예쁜 단어 카드를 찾아보세요!
+      </div>
+    </div>
+
+    <!-- [화면 4] 게임 3: 토닥토닥 상황극 -->
+    <div id="screen-story" class="w-full bg-white rounded-[28px] border-8 border-violet-200 p-5 flex flex-col items-center text-center custom-shadow gap-4 hidden">
+      <div class="w-full flex justify-between items-center pb-2 border-b border-violet-100">
+        <button onclick="goHome()" class="text-sm font-bold text-violet-600 bg-violet-50 px-3 py-1 rounded-full border border-violet-200">🏠 처음으로</button>
+        <span class="text-sm font-bold text-slate-500">상황극: <span id="story-progress" class="text-violet-600 text-base">1</span> / 3</span>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-black text-violet-700">💬 토닥토닥 상황극</h3>
+        <p class="text-xs text-slate-500 font-bold">친구가 힘든 상황이래요. <span class="text-violet-500">가장 따뜻한 대답</span>을 골라주세요!</p>
+      </div>
+
+      <!-- 상황 일러스트 삽입을 위한 컴포넌트 -->
+      <div class="w-full bg-violet-50 border-2 border-violet-100 rounded-2xl p-4 flex flex-col items-center gap-3">
+        <!-- SVG 그림 렌더링 컨테이너 -->
+        <div id="story-illustration" class="floating-effect"></div>
+        <p id="story-text" class="text-base font-bold text-slate-700 leading-relaxed tracking-tight">
+          불러오는 중...
+        </p>
+      </div>
+
+      <!-- 정답 선택지 버튼 2개 -->
+      <div class="w-full flex flex-col gap-2.5 mt-1">
+        <button id="story-choice-a" onclick="chooseStoryAnswer('A')" class="game-btn w-full bg-white hover:bg-violet-50 text-slate-700 text-base font-bold py-3.5 px-4 rounded-2xl border-2 border-violet-200 hover:border-violet-300 custom-shadow flex items-center gap-2">
+          <span class="bg-violet-100 text-violet-600 w-6 h-6 flex items-center justify-center rounded-lg text-sm">1</span>
+          <span id="story-choice-a-text" class="text-left flex-1 leading-snug">보기 1</span>
+        </button>
+        <button id="story-choice-b" onclick="chooseStoryAnswer('B')" class="game-btn w-full bg-white hover:bg-violet-50 text-slate-700 text-base font-bold py-3.5 px-4 rounded-2xl border-2 border-violet-200 hover:border-violet-300 custom-shadow flex items-center gap-2">
+          <span class="bg-violet-100 text-violet-600 w-6 h-6 flex items-center justify-center rounded-lg text-sm">2</span>
+          <span id="story-choice-b-text" class="text-left flex-1 leading-snug">보기 2</span>
+        </button>
+      </div>
+
+      <div id="story-guide" class="text-base font-bold text-violet-700 bg-violet-50 px-4 py-2 rounded-xl border border-violet-100 w-full min-h-[44px] flex items-center justify-center">
+        친구가 안심할 말을 골라봐요!
+      </div>
+    </div>
+
+    <!-- [화면 5] 결과 스크린 (종료 및 축하) -->
+    <div id="screen-end" class="w-full bg-white rounded-[28px] border-8 border-pink-200 p-6 flex flex-col items-center text-center custom-shadow gap-5 hidden">
+      <div class="pulse-effect">
+        <!-- 축하 화관 캐릭터 SVG -->
+        <svg class="w-36 h-36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="55" r="32" fill="#FEF08A" stroke="#EAB308" stroke-width="3"/>
+          <circle cx="36" cy="48" r="4.5" fill="#1E293B"/>
+          <circle cx="64" cy="48" r="4.5" fill="#1E293B"/>
+          <circle cx="34" cy="46" r="1.5" fill="#FFFFFF"/>
+          <circle cx="62" cy="46" r="1.5" fill="#FFFFFF"/>
+          <!-- 볼터치 -->
+          <circle cx="28" cy="55" r="5" fill="#FDA4AF" opacity="0.8"/>
+          <circle cx="72" cy="55" r="5" fill="#FDA4AF" opacity="0.8"/>
+          <!-- 함박 웃음 입 -->
+          <path d="M 40 60 Q 50 72 60 60" stroke="#1E293B" stroke-width="3" stroke-linecap="round" fill="none"/>
+          
+          <!-- 머리 위 꽃 화관 일러스트 -->
+          <circle cx="32" cy="28" r="5" fill="#F472B6"/>
+          <circle cx="41" cy="23" r="5" fill="#38BDF8"/>
+          <circle cx="50" cy="21" r="5" fill="#FBBF24"/>
+          <circle cx="59" cy="23" r="5" fill="#A78BFA"/>
+          <circle cx="68" cy="28" r="5" fill="#34D399"/>
+        </svg>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-black text-pink-600 mb-1">🎉 참 잘했어요! 🎉</h2>
+        <p class="text-lg text-slate-700 font-bold mb-3">우리는 이제 멋진 <br><span class="text-emerald-600 text-xl">✨ 다정한 말을 배우는 우리들! ✨</span></p>
+        <div class="bg-amber-50 px-5 py-2.5 rounded-2xl border border-amber-200 inline-block">
+          <p class="text-sm text-amber-800 font-bold">오늘 모은 빛나는 별</p>
+          <p class="text-2xl font-black text-amber-500">⭐ <span id="end-score">0</span>개 ⭐</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-500 font-bold px-2 leading-relaxed">
+        다정한 말을 들으면 내 친구도, 내 마음도 촉촉한 꽃밭처럼 이쁘게 피어난대요. 오늘 배운 예쁜 말을 집에 가서 부모님께도 말해주기로 약속해요! 🥰
+      </p>
+
+      <button onclick="goHome()" class="game-btn w-full bg-pink-500 hover:bg-pink-600 text-white text-lg font-bold py-3.5 px-6 rounded-2xl border-b-6 border-pink-700 custom-shadow">
+        🏠 처음으로 돌아가기
+      </button>
+    </div>
+
+  </main>
+
+  <!-- 하단 발문 -->
+  <footer class="w-full max-w-md text-center py-2 text-slate-500 text-xs font-bold z-10">
+    <span>❤️ 소중한 내 친구를 부드러운 목소리로 불러보세요.</span>
+  </footer>
+
+  <script>
+    // --- 글로벌 상태값 관리 ---
+    let globalScore = 0;
+    let currentMode = 'home';
+
+    // 귀여운 신디사이저 효과음 재생기 (AudioContext)
+    const playSound = (type) => {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5 (도)
+          osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5 (미)
+          osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5 (솔)
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+        } else if (type === 'fail') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(260, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        } else if (type === 'complete') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+          osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
+          osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16);
+          osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.24); // C6 (옥타브 도)
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.5);
+        }
+      } catch(e) {
+        console.warn("오디오 지원 미흡");
+      }
+    };
+
+    // 브라우저 낭독 기능 (TTS) - 글자를 잘못 읽는 어린아이 복습 배려
+    const speakWord = (text) => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ko-KR';
+        utterance.rate = 0.85; // 천천히 정독하여 확실하게 들려줌
+        utterance.pitch = 1.25; // 아기자기한 귀여운 하이톤
+        window.speechSynthesis.speak(utterance);
+      }
+    };
+
+    // 꽃가루 연출 효과
+    const triggerConfetti = () => {
+      const colors = ['#FDA4AF', '#FCD34D', '#86EFAC', '#93C5FD', '#C084FC', '#F472B6'];
+      const container = document.getElementById('confetti-container');
+      for (let i = 0; i < 35; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDuration = (Math.random() * 2 + 1.2) + 's';
+        confetti.style.top = '-10px';
+        container.appendChild(confetti);
+        
+        setTimeout(() => { confetti.remove(); }, 3000);
+      }
+    };
+
+    const addScore = (amount) => {
+      globalScore += amount;
+      document.getElementById('global-score').textContent = globalScore;
+    };
+
+    // --- 화면 이동 제어 ---
+    const showScreen = (screenId) => {
+      const screens = ['screen-home', 'screen-tree', 'screen-cards', 'screen-story', 'screen-end'];
+      screens.forEach(id => {
+        const el = document.getElementById(id);
+        if (id === screenId) {
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+    };
+
+    const goHome = () => {
+      if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
+      currentMode = 'home';
+      showScreen('screen-home');
+    };
+
+    const finishGame = () => {
+      playSound('complete');
+      triggerConfetti();
+      document.getElementById('end-score').textContent = globalScore;
+      showScreen('screen-end');
+    };
+
+    // --- STREAMING_CHUNK: Initializing Game 1 (Tree Game) logic ---
+    // --- [놀이 1] 다정한 말 열매 나무 (다정한말 3, 나쁜말 3 완벽 구현) ---
+    const fruitData = [
+      { id: 1, text: "사랑해", isKind: true, emoji: "❤️" },
+      { id: 2, text: "고마워", isKind: true, emoji: "🍊" },
+      { id: 3, text: "괜찮아", isKind: true, emoji: "🍒" },
+      { id: 4, text: "저리가!", isKind: false, emoji: "🐛" },
+      { id: 5, text: "바보야", isKind: false, emoji: "🧱" },
+      { id: 6, text: "메롱", isKind: false, emoji: "👾" }
+    ];
+
+    let remainingKindFruits = 0;
+
+    const initTreeGame = () => {
+      const container = document.getElementById('fruit-container');
+      const guide = document.getElementById('tree-guide');
+      container.innerHTML = '';
+      guide.textContent = "다정한 말을 골라주세요! 소리가 나요!";
+      
+      remainingKindFruits = fruitData.filter(f => f.isKind).length;
+      document.getElementById('tree-target').textContent = remainingKindFruits;
+
+      // 6개 열매를 겹치지 않게 나무 상단에 넉넉히 배치
+      const positions = [
+        { x: 35, y: 30 }, { x: 130, y: 20 }, { x: 220, y: 35 },
+        { x: 80, y: 100 }, { x: 180, y: 90 }, { x: 120, y: 165 }
+      ];
+
+      // 무작위 순서 매칭
+      const shuffledPositions = [...positions].sort(() => Math.random() - 0.5);
+
+      fruitData.forEach((fruit, idx) => {
+        const fruitEl = document.createElement('button');
+        const pos = shuffledPositions[idx] || { x: 100, y: 100 };
+        
+        fruitEl.className = "absolute game-btn text-sm font-bold bg-white/95 px-3.5 py-2 rounded-2xl shadow-md border-2 border-emerald-300 flex items-center gap-1 z-20 cursor-pointer";
+        fruitEl.style.left = `${pos.x}px`;
+        fruitEl.style.top = `${pos.y}px`;
+        fruitEl.innerHTML = `<span class="text-lg">${fruit.emoji}</span> <span class="text-slate-800 font-extrabold text-xs">${fruit.text}</span>`;
+        
+        fruitEl.onclick = () => handleFruitTap(fruit, fruitEl);
+        container.appendChild(fruitEl);
+      });
+    };
+
+    const handleFruitTap = (fruit, element) => {
+      if (element.disabled) return;
+
+      if (fruit.isKind) {
+        element.disabled = true;
+        element.classList.remove('bg-white/95', 'border-emerald-300');
+        element.classList.add('bg-pink-100', 'border-pink-300', 'opacity-60', 'scale-90');
+        element.innerHTML = `💖 <span class="text-xs">${fruit.text}</span>`;
+        
+        playSound('success');
+        speakWord(fruit.text);
+        
+        addScore(10);
+        remainingKindFruits--;
+        document.getElementById('tree-target').textContent = remainingKindFruits;
+
+        const guide = document.getElementById('tree-guide');
+        guide.textContent = `💖 "${fruit.text}"! 참 좋은 말이에요!`;
+
+        if (remainingKindFruits === 0) {
+          setTimeout(() => {
+            alertModal("🌳 나무가 튼튼해졌어요!", "모든 예쁜 열매를 바구니에 담았어요!", () => {
+              finishGame();
+            });
+          }, 800);
+        }
+      } else {
+        // 나쁜 말 클릭 시 흔들림 애니메이션 효과 및 피드백 제공
+        element.classList.add('animate-shake', 'bg-rose-50', 'border-rose-400');
+        playSound('fail');
+        speakWord(fruit.text);
+        
+        const guide = document.getElementById('tree-guide');
+        guide.textContent = `😢 "${fruit.text}"은 친구의 마음을 시무룩하게 만들어요.`;
+        
+        setTimeout(() => {
+          element.classList.remove('animate-shake', 'bg-rose-50', 'border-rose-400');
+        }, 1000);
+      }
+    };
+
+    // --- STREAMING_CHUNK: Initializing Game 2 (Card Matching Game) logic ---
+    // --- [놀이 2] 다정한 카드 맞추기 (동일한 카드 2장씩 매칭하도록 리뉴얼) ---
+    const cardSvgAssets = {
+      thankYou: `
+        <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="45" fill="#ECFDF5" stroke="#34D399" stroke-width="2"/>
+          <path d="M 25 55 Q 35 40 50 45 Q 65 50 75 40" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
+          <path d="M 25 45 Q 35 60 50 50 Q 65 40 75 50" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
+          <path d="M 50 20 C 50 20 48 16 45 16 C 42 16 40 19 43 22 L 50 28 L 57 22 C 60 19 58 16 55 16 C 52 16 50 20 50 20 Z" fill="#FBBF24"/>
+        </svg>
+      `,
+      love: `
+        <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="45" fill="#FFF1F2" stroke="#FDA4AF" stroke-width="2"/>
+          <path d="M 50 32 C 50 32 44 20 34 20 C 24 20 18 28 26 42 L 50 72 L 74 42 C 82 28 76 20 66 20 C 56 20 50 32 50 32 Z" fill="#F43F5E"/>
+        </svg>
+      `,
+      gwenchana: `
+        <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="45" fill="#EFF6FF" stroke="#93C5FD" stroke-width="2"/>
+          <rect x="25" y="42" width="50" height="16" rx="4" fill="#FDBA74" stroke="#D97706" stroke-width="1.5" transform="rotate(30 50 50)"/>
+          <rect x="25" y="42" width="50" height="16" rx="4" fill="#FDBA74" stroke="#D97706" stroke-width="1.5" transform="rotate(-30 50 50)"/>
+          <circle cx="50" cy="50" r="1.5" fill="#B45309"/>
+          <circle cx="45" cy="47" r="1.5" fill="#B45309"/>
+          <circle cx="55" cy="53" r="1.5" fill="#B45309"/>
+          <circle cx="45" cy="53" r="1.5" fill="#B45309"/>
+          <circle cx="55" cy="47" r="1.5" fill="#B45309"/>
+        </svg>
+      `,
+      youAreBest: `
+        <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="45" fill="#FEF3C7" stroke="#FBBF24" stroke-width="2"/>
+          <circle cx="50" cy="44" r="18" fill="#FBBF24" stroke="#D97706" stroke-width="2"/>
+          <path d="M 42 70 L 35 85 L 50 78 L 65 85 L 58 70 Z" fill="#EF4444" stroke="#B91C1C" stroke-width="1.5"/>
+          <path d="M 45 48 L 45 42 Q 45 37 49 37 Q 53 37 52 44 L 54 44 Q 57 44 57 47 Q 57 50 54 50 L 53 50" stroke="#78350F" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <circle cx="50" cy="44" r="12" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+          <path d="M 49 38 L 51 42 L 56 42 L 52 45 L 54 49 L 49 46 L 44 49 L 46 45 L 42 42 L 47 42 Z" fill="#F59E0B"/>
+        </svg>
+      `
+    };
+
+    const cardDataRaw = [
+      { key: "thankYou", text: "고마워", svg: cardSvgAssets.thankYou },
+      { key: "love", text: "사랑해", svg: cardSvgAssets.love },
+      { key: "gwenchana", text: "괜찮아", svg: cardSvgAssets.gwenchana },
+      { key: "youAreBest", text: "넌 최고야", svg: cardSvgAssets.youAreBest }
+    ];
+
+    let selectedCards = [];
+    let matchedCount = 0;
+    let cardsDeck = [];
+
+    const initCardGame = () => {
+      const grid = document.getElementById('card-grid');
+      const guide = document.getElementById('card-guide');
+      grid.innerHTML = '';
+      guide.textContent = "카드 두 장을 차례대로 골라 똑같은 짝을 맞춰보세요!";
+      selectedCards = [];
+      matchedCount = 0;
+      document.getElementById('card-matches').textContent = 0;
+
+      const deck = [];
+      cardDataRaw.forEach((item, index) => {
+        // 단어와 그림이 모두 합쳐진 완전히 동일한 카드 2장씩 추가 (총 8장)
+        deck.push({ id: `${index}-a`, text: item.text, value: index, svg: item.svg });
+        deck.push({ id: `${index}-b`, text: item.text, value: index, svg: item.svg });
+      });
+
+      // 무작위 셔플
+      cardsDeck = deck.sort(() => Math.random() - 0.5);
+
+      cardsDeck.forEach((card, index) => {
+        const cardBox = document.createElement('div');
+        cardBox.className = "relative h-28 cursor-pointer game-btn card-container";
+        cardBox.dataset.index = index;
+
+        // 앞면은 비밀 반짝이, 뒷면은 일러스트 + 텍스트가 동시에 한 카드 안에 예쁘게 표시됩니다.
+        cardBox.innerHTML = `
+          <div class="card-inner w-full h-full relative">
+            <!-- 앞면 (카드 뒷면 대기 상태) -->
+            <div class="card-front w-full h-full flex items-center justify-center">
+              <span class="text-2xl text-yellow-300 font-extrabold">✨</span>
+            </div>
+            <!-- 뒷면 (카드 앞면 오픈 상태 - 그림 + 글자 결합형) -->
+            <div class="card-back w-full h-full flex flex-col items-center justify-center p-2 border-2 border-sky-300 bg-white rounded-2xl">
+              <div class="w-12 h-12 flex items-center justify-center mb-1">${card.svg}</div>
+              <span class="text-sm font-black text-slate-800 tracking-tight">${card.text}</span>
+            </div>
+          </div>
+        `;
+
+        cardBox.onclick = () => selectCard(index, cardBox);
+        grid.appendChild(cardBox);
+      });
+    };
+
+    const selectCard = (index, element) => {
+      if (element.classList.contains('card-flipped') || element.classList.contains('matched') || selectedCards.length >= 2) {
+        return;
+      }
+
+      element.classList.add('card-flipped');
+      selectedCards.push({ index, element, data: cardsDeck[index] });
+
+      // 뒤집었을 때 카드의 다정한 단어를 읽어주어 말하기 학습을 유도합니다.
+      speakWord(cardsDeck[index].text);
+
+      if (selectedCards.length === 2) {
+        checkCardMatch();
+      }
+    };
+
+    const checkCardMatch = () => {
+      const [card1, card2] = selectedCards;
+
+      if (card1.data.value === card2.data.value) {
+        card1.element.classList.add('matched');
+        card2.element.classList.add('matched');
+        
+        matchedCount++;
+        document.getElementById('card-matches').textContent = matchedCount;
+        addScore(15);
+        
+        const guide = document.getElementById('card-guide');
+        guide.textContent = `✨ 똑같아요! 다 함께 큰 소리로 "${cardDataRaw[card1.data.value].text}"!`;
+
+        playSound('success');
+        selectedCards = [];
+
+        if (matchedCount === 4) {
+          setTimeout(() => {
+            alertModal("🃏 기억력이 너무 훌륭해요!", "모든 똑같은 다정한 말 카드의 짝을 찾았어요!", () => {
+              finishGame();
+            });
+          }, 1000);
+        }
+      } else {
+        const guide = document.getElementById('card-guide');
+        guide.textContent = `앗, 다른 카드예요! 천천히 다시 골라봐요.`;
+        playSound('fail');
+
+        setTimeout(() => {
+          card1.element.classList.remove('card-flipped');
+          card2.element.classList.remove('card-flipped');
+          selectedCards = [];
+        }, 1200);
+      }
+    };
+
+    // --- STREAMING_CHUNK: Initializing Game 3 (Story Game) logic... ---
+    // --- [놀이 3] 토닥토닥 상황극 (아기자기한 SVG 일러스트 삽입) ---
+    const storyData = [
+      {
+        id: 1,
+        illustration: `
+          <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="45" fill="#FAF5FF" stroke="#D8B4FE" stroke-width="2"/>
+            <!-- 와르르 무너진 형형색색 블록 탑 -->
+            <rect x="25" y="70" width="16" height="12" rx="2" fill="#F43F5E" stroke="#BE123C" stroke-width="1.5"/>
+            <rect x="44" y="74" width="20" height="10" rx="2" fill="#3B82F6" stroke="#1D4ED8" stroke-width="1.5" transform="rotate(15 44 74)"/>
+            <rect x="68" y="66" width="14" height="14" rx="2" fill="#10B981" stroke="#047857" stroke-width="1.5" transform="rotate(-25 68 66)"/>
+            <polygon points="46,42 54,54 38,54" fill="#FBBF24" stroke="#D97706" stroke-width="1.5" transform="rotate(45 50 48)"/>
+            <!-- 우는 눈물방울 표정 -->
+            <circle cx="38" cy="40" r="2" fill="#5B21B6"/>
+            <circle cx="62" cy="40" r="2" fill="#5B21B6"/>
+            <path d="M 44 48 Q 50 54 56 48" stroke="#5B21B6" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+        `,
+        text: "친구 마음이가 높이 쌓은 블록 탑이 와르르 무너져 속상해하고 있어요. 흑흑...",
+        choices: {
+          A: { text: "바보야, 좀 더 조심해서 쌓았어야지!", isCorrect: false },
+          B: { text: "정말 속상하겠다. 내가 다시 같이 쌓아줄게!", isCorrect: true }
+        },
+        explain: "블록이 무너져 시무룩한 친구에게 속상한 마음을 따스하게 공감해주고 함께 도와준다면, 친구의 속상함이 눈 녹듯 사라질 거예요."
+      },
+      {
+        id: 2,
+        illustration: `
+          <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="45" fill="#FFF5F5" stroke="#FECACA" stroke-width="2"/>
+            <!-- 아파하는 귀여운 얼굴과 눈물 뚝뚝 -->
+            <circle cx="50" cy="52" r="24" fill="#FFE4E6"/>
+            <circle cx="42" cy="48" r="2.5" fill="#BE123C"/>
+            <circle cx="58" cy="48" r="2.5" fill="#BE123C"/>
+            <!-- 찡그린 우는 입 모양 -->
+            <path d="M 44 60 Q 50 52 56 60" stroke="#BE123C" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <circle cx="36" cy="55" r="3" fill="#FDA4AF"/>
+            <circle cx="64" cy="55" r="3" fill="#FDA4AF"/>
+            <!-- 뚝뚝 떨어지는 눈물방울 -->
+            <path d="M 38 52 L 38 64 M 62 52 L 62 64" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        `,
+        text: "친구 기쁨이가 운동장에서 달리기를 하다가 넘어졌어요. 다리가 아픈지 눈물이 핑그르르 돌아요.",
+        choices: {
+          A: { text: "많이 아프지? 괜찮아? 내가 보건실 같이 가줄게!", isCorrect: true },
+          B: { text: "에이 바보, 달리기도 제대로 못 하고 뒤뚱뒤뚱 넘어진대요!", isCorrect: false }
+        },
+        explain: "다쳐서 아픈 친구에게 장난이나 핀잔을 늘어놓는 것보다 다쳐서 놀란 마음을 가만히 두 손으로 잡아 주는 다정함이 최고예요."
+      },
+      {
+        id: 3,
+        illustration: `
+          <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="45" fill="#FEF3C7" stroke="#FDE68A" stroke-width="2"/>
+            <!-- 하트뿅뿅 곰인형 얼굴 그리기 -->
+            <circle cx="50" cy="55" r="20" fill="#D97706"/>
+            <circle cx="36" cy="38" r="7" fill="#B45309"/>
+            <circle cx="64" cy="38" r="7" fill="#B45309"/>
+            <ellipse cx="50" cy="62" rx="7" ry="5" fill="#FDE68A"/>
+            <!-- 조그만 코와 미소 -->
+            <polygon points="48,59 52,59 50,61" fill="#78350F"/>
+            <path d="M 47 64 Q 50 67 53 64" stroke="#78350F" stroke-width="1.5" fill="none"/>
+            <circle cx="43" cy="50" r="2" fill="#000"/>
+            <circle cx="57" cy="50" r="2" fill="#000"/>
+            <!-- 둥실 사랑 하트 일러스트 -->
+            <path d="M 50 22 C 50 22 47 16 43 16 C 39 16 36 20 40 25 L 50 34 L 60 25 C 64 20 61 16 57 16 C 53 16 50 22 50 22 Z" fill="#EC4899" class="pulse-effect"/>
+          </svg>
+        `,
+        text: "사랑이가 가져온 귀여운 곰 인형을 나도 한번 포근하게 안아보며 놀고 싶어요.",
+        choices: {
+          A: { text: "그거 이리 내놔! 나 한번만 만져볼래!", isCorrect: false },
+          B: { text: "곰 인형 정말 예쁘다. 한 번만 같이 안아봐도 될까?", isCorrect: true }
+        },
+        explain: "강제로 물건을 빼앗지 않고, 상대방의 소중한 소유물을 존중하며 다정한 어조로 부탁을 나누는 태도가 교우관계의 기초랍니다."
+      }
+    ];
+
+    let currentStoryIdx = 0;
+
+    const initStoryGame = () => {
+      currentStoryIdx = 0;
+      showStoryQuestion();
+    };
+
+    const showStoryQuestion = () => {
+      const data = storyData[currentStoryIdx];
+      document.getElementById('story-progress').textContent = currentStoryIdx + 1;
+      
+      // 귀여운 정밀 일러스트 SVG 코드를 innerHTML에 그대로 삽입
+      document.getElementById('story-illustration').innerHTML = data.illustration;
+      document.getElementById('story-text').textContent = data.text;
+      
+      document.getElementById('story-choice-a-text').textContent = data.choices.A.text;
+      document.getElementById('story-choice-b-text').textContent = data.choices.B.text;
+
+      resetChoiceStyles();
+      document.getElementById('story-guide').textContent = "친구가 기분이 살며시 좋아지는 말을 골라볼까요?";
+    };
+
+    const resetChoiceStyles = () => {
+      const btnA = document.getElementById('story-choice-a');
+      const btnB = document.getElementById('story-choice-b');
+      btnA.className = "game-btn w-full bg-white hover:bg-violet-50 text-slate-700 text-base font-bold py-3.5 px-4 rounded-2xl border-2 border-violet-200 hover:border-violet-300 custom-shadow flex items-center gap-2";
+      btnB.className = "game-btn w-full bg-white hover:bg-violet-50 text-slate-700 text-base font-bold py-3.5 px-4 rounded-2xl border-2 border-violet-200 hover:border-violet-300 custom-shadow flex items-center gap-2";
+    };
+
+    const chooseStoryAnswer = (choiceKey) => {
+      const data = storyData[currentStoryIdx];
+      const isCorrect = data.choices[choiceKey].isCorrect;
+      const clickedBtn = choiceKey === 'A' ? document.getElementById('story-choice-a') : document.getElementById('story-choice-b');
+
+      speakWord(data.choices[choiceKey].text);
+
+      if (isCorrect) {
+        clickedBtn.classList.remove('border-violet-200', 'bg-white');
+        clickedBtn.classList.add('border-emerald-400', 'bg-emerald-50', 'text-emerald-800');
+        
+        playSound('success');
+        addScore(20);
+        
+        document.getElementById('story-guide').textContent = "우와! 정말 듣기만 해도 행복해지는 답이었어요! 👍";
+
+        setTimeout(() => {
+          alertModal("💬 따뜻한 우리들!", data.explain, () => {
+            currentStoryIdx++;
+            if (currentStoryIdx < storyData.length) {
+              showStoryQuestion();
+            } else {
+              finishGame();
+            }
+          });
+        }, 1200);
+
+      } else {
+        clickedBtn.classList.remove('border-violet-200', 'bg-white');
+        clickedBtn.classList.add('border-rose-400', 'bg-rose-50', 'text-rose-800', 'animate-shake');
+        
+        playSound('fail');
+        document.getElementById('story-guide').textContent = "앗! 그 대답은 친구의 눈물이 가만히 쏟아지게 만들어요. 다른 말을 다시 찾을까요?";
+      }
+    };
+
+    // --- STREAMING_CHUNK: Setting up customized modal UI... ---
+    // --- 유치원용 예쁜 모달 팝업 레이어 (alert 차단 조항 대응) ---
+    const alertModal = (title, message, callback) => {
+      const modal = document.createElement('div');
+      modal.className = "fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6";
+      modal.innerHTML = `
+        <div class="bg-white rounded-[28px] border-8 border-emerald-200 p-6 max-w-sm w-full flex flex-col items-center text-center custom-shadow gap-4">
+          <span class="text-4xl text-pink-500">🌸</span>
+          <h4 class="text-xl font-black text-emerald-800">${title}</h4>
+          <p class="text-sm text-slate-600 font-bold leading-relaxed">${message}</p>
+          <button id="modal-ok-btn" class="game-btn w-full bg-emerald-500 hover:bg-emerald-600 text-white text-base font-bold py-3 px-5 rounded-xl border-b-4 border-emerald-700 custom-shadow">
+            참 잘했어요! 다음으로
+          </button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      document.getElementById('modal-ok-btn').onclick = () => {
+        playSound('success');
+        modal.remove();
+        if (callback) callback();
+      };
+    };
+
+    // --- 게임 실행 진입 게이트웨이 ---
+    const startGame = (mode) => {
+      playSound('success');
+      currentMode = mode;
+      
+      if (mode === 'tree') {
+        showScreen('screen-tree');
+        initTreeGame();
+      } else if (mode === 'cards') {
+        showScreen('screen-cards');
+        initCardGame();
+      } else if (mode === 'story') {
+        showScreen('screen-story');
+        initStoryGame();
+      }
+    };
+
+    // 로딩 디버깅 완료 로그
+    window.onload = () => {
+      console.log("반짝반짝 다정한 말 놀이터에 오신 것을 환영합니다.");
+    };
+  </script>
+</body>
+</html>

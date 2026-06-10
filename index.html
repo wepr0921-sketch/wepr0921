@@ -3,848 +3,973 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>반짝반짝 다정한 말 놀이터 ✨</title>
-  <!-- Tailwind CSS -->
+  <title>신나는 시장놀이 키오스크</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: 윤고딕 스타일을 보완할 깔끔하고 볼드한 Noto Sans KR 로드 -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
-  
+  <!-- Google Fonts for Cute Korean Typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'YoonGothic', 'Yoon Gothic', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-      font-weight: 700;
-      user-select: none;
-      -webkit-user-select: none;
+      font-family: 'Jua', 'Gaegu', sans-serif;
     }
     .custom-shadow {
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 0px 0px #e2e8f0;
     }
-    .game-btn {
-      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    .kiosk-bezel {
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
     }
-    .game-btn:active {
-      transform: scale(0.94);
-    }
-    /* 둥실둥실 부드러운 애니메이션 */
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-8px) rotate(1.5deg); }
-    }
-    .floating-effect {
-      animation: float 4s ease-in-out infinite;
-    }
-    @keyframes pulse-slow {
+    /* Bounce Animation for Added Items */
+    @keyframes bounce-subtle {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.04); }
+      50% { transform: scale(1.15); }
     }
-    .pulse-effect {
-      animation: pulse-slow 2s ease-in-out infinite;
+    .add-bounce {
+      animation: bounce-subtle 0.3s ease-in-out;
     }
-    
-    /* 카드 뒤집기 3D 트랜지션 공간 정의 */
-    .card-container {
-      perspective: 1000px;
+    /* Cash Sliding Animation */
+    @keyframes slide-to-slot {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-150px) scale(0.3); opacity: 0; }
     }
-    .card-inner {
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-      position: relative;
-      width: 100%;
-      height: 100%;
+    .cash-slide {
+      animation: slide-to-slot 0.8s forwards ease-in-out;
     }
-    /* 뒤집었을 때 180도 회전 */
-    .card-flipped .card-inner {
-      transform: rotateY(180deg);
+    /* Card Sliding Animation */
+    @keyframes card-insert {
+      0% { transform: translateY(100px); }
+      50% { transform: translateY(-20px); }
+      100% { transform: translateY(10px); }
     }
-    .card-front, .card-back {
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 1rem;
-    }
-    /* 뒷면(초기 물음표 카드) */
-    .card-front {
-      background: linear-gradient(135deg, #38bdf8, #4f46e5);
-      z-index: 2;
-    }
-    /* 앞면(뒤집혀서 보이는 한글/그림 내용) */
-    .card-back {
-      transform: rotateY(180deg);
-      background-color: #ffffff;
-      z-index: 1;
-    }
-    
-    /* 축하 꽃가루 가볍게 날리기 */
-    .confetti {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      animation: fall linear forwards;
-    }
-    @keyframes fall {
-      to {
-        transform: translateY(100vh) rotate(360deg);
-      }
-    }
-    /* 흔들림 에러 피드백 */
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-6px); }
-      75% { transform: translateX(6px); }
-    }
-    .animate-shake {
-      animation: shake 0.4s ease-in-out;
+    .card-slide {
+      animation: card-insert 1s forwards ease-out;
     }
   </style>
 </head>
-<body class="bg-gradient-to-b from-sky-50 to-emerald-100 min-h-screen flex flex-col items-center justify-between p-4 overflow-x-hidden relative">
+<body class="bg-amber-50 min-h-screen flex items-center justify-center p-4 overflow-x-hidden">
 
-  <!-- Confetti Container -->
-  <div id="confetti-container" class="absolute inset-0 pointer-events-none overflow-hidden z-50"></div>
-
-  <header class="w-full max-w-md flex justify-between items-center bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl border-4 border-emerald-200 custom-shadow z-10">
-    <div class="flex items-center gap-2">
-      <span class="text-2xl text-yellow-500">✨</span>
-      <h1 class="text-xl font-black text-emerald-700 tracking-tight">다정한 말 놀이터</h1>
-    </div>
-    <div class="flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border-2 border-emerald-200">
-      <span class="text-base text-yellow-500">⭐</span>
-      <span id="global-score" class="text-base font-bold text-emerald-800">0</span>
-    </div>
-  </header>
-
-  <!-- 메인 게임 콘텐츠 가변 카드 -->
-  <main id="game-container" class="w-full max-w-md my-auto flex flex-col items-center justify-center min-h-[520px] z-10">
+  <!-- Main Kiosk Frame -->
+  <div class="w-full max-w-5xl bg-white border-8 border-yellow-400 rounded-[3rem] kiosk-bezel overflow-hidden flex flex-col relative aspect-[4/3] md:aspect-auto md:h-[750px] select-none">
     
-    <!-- [화면 1] 메인 홈 화면 -->
-    <div id="screen-home" class="w-full bg-white rounded-[28px] border-8 border-emerald-200 p-6 flex flex-col items-center text-center custom-shadow gap-6">
-      <div class="floating-effect">
-        <!-- 메인 다정이 캐릭터 (SVG) -->
-        <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="50" r="45" fill="#E0F2FE" stroke="#38BDF8" stroke-width="4"/>
-          <!-- 귀여운 눈빛 -->
-          <circle cx="35" cy="45" r="5" fill="#0F172A"/>
-          <circle cx="65" cy="45" r="5" fill="#0F172A"/>
-          <circle cx="33" cy="43" r="1.5" fill="#FFFFFF"/>
-          <circle cx="63" cy="43" r="1.5" fill="#FFFFFF"/>
-          <!-- 볼터치 -->
-          <circle cx="27" cy="52" r="6" fill="#FDA4AF" opacity="0.8"/>
-          <circle cx="73" cy="52" r="6" fill="#FDA4AF" opacity="0.8"/>
-          <!-- 보조개 띤 입 -->
-          <path d="M 42 58 Q 50 66 58 58" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-          <!-- 머리 위 새싹 장식 -->
-          <path d="M 50 15 C 50 15 46 8 40 10 C 36 11 38 18 50 17" fill="#4ADE80" stroke="#16A34A" stroke-width="1.5"/>
-          <path d="M 50 15 C 50 15 54 8 60 10 C 64 11 62 18 50 17" fill="#4ADE80" stroke="#16A34A" stroke-width="1.5"/>
-          <line x1="50" y1="16" x2="50" y2="24" stroke="#16A34A" stroke-width="2"/>
-        </svg>
+    <!-- Kiosk Top Header Bar -->
+    <header class="bg-yellow-400 text-amber-900 px-6 py-4 flex justify-between items-center border-b-4 border-yellow-500">
+      <div class="flex items-center gap-3">
+        <span class="text-4xl">🎒</span>
+        <h1 class="text-3xl md:text-4xl tracking-wider">신나는 시장놀이</h1>
       </div>
-
-      <div>
-        <h2 class="text-2xl font-black text-slate-800 mb-1">안녕! 나는 다정이야!</h2>
-        <p class="text-base text-slate-600 font-bold leading-relaxed">우리 마음의 예쁜 생각들을 모아<br><span class="text-pink-500">💞 다정한 말</span>로 함께 복습해볼까?</p>
-      </div>
-
-      <!-- 놀이 메뉴 리스트 -->
-      <div class="w-full flex flex-col gap-3">
-        <button onclick="startGame('tree')" class="game-btn w-full bg-emerald-500 hover:bg-emerald-600 text-white text-lg font-bold py-3.5 px-6 rounded-2xl border-b-6 border-emerald-700 custom-shadow flex items-center justify-between">
-          <span>🌳 1. 다정한 열매 따기</span>
-          <span class="bg-white/20 text-xs px-2.5 py-1 rounded-full font-bold">출발!</span>
+      <div class="flex items-center gap-4">
+        <!-- Voice Assist Toggle Toggle Button -->
+        <button id="voice-toggle" onclick="toggleVoice()" class="flex items-center gap-2 bg-white hover:bg-amber-100 text-amber-900 px-4 py-2 rounded-full text-lg font-bold transition border-2 border-amber-600 shadow-sm">
+          <span id="voice-icon">🔊</span>
+          <span id="voice-text">목소리 켬</span>
         </button>
-        <button onclick="startGame('cards')" class="game-btn w-full bg-sky-500 hover:bg-sky-600 text-white text-lg font-bold py-3.5 px-6 rounded-2xl border-b-6 border-sky-700 custom-shadow flex items-center justify-between">
-          <span>🃏 2. 다정한 카드 뒤집기</span>
-          <span class="bg-white/20 text-xs px-2.5 py-1 rounded-full font-bold">출발!</span>
-        </button>
-        <button onclick="startGame('story')" class="game-btn w-full bg-violet-500 hover:bg-violet-600 text-white text-lg font-bold py-3.5 px-6 rounded-2xl border-b-6 border-violet-700 custom-shadow flex items-center justify-between">
-          <span>💬 3. 토닥토닥 상황극</span>
-          <span class="bg-white/20 text-xs px-2.5 py-1 rounded-full font-bold">출발!</span>
-        </button>
+        <div id="clock" class="text-2xl font-bold bg-amber-500/20 px-4 py-1.5 rounded-full text-amber-950 hidden md:block">
+          오전 00:00
+        </div>
       </div>
-    </div>
+    </header>
 
-    <!-- [화면 2] 게임 1: 다정한 열매 나무 -->
-    <div id="screen-tree" class="w-full bg-white rounded-[28px] border-8 border-emerald-200 p-5 flex flex-col items-center text-center custom-shadow gap-4 hidden">
-      <div class="w-full flex justify-between items-center pb-2 border-b border-emerald-100">
-        <button onclick="goHome()" class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">🏠 처음으로</button>
-        <span class="text-sm font-bold text-slate-500">찾을 열매: <span id="tree-target" class="text-emerald-600 text-base">0</span>개</span>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-black text-emerald-700">🌳 다정한 열매만 따주세요!</h3>
-        <p class="text-xs text-slate-500 font-bold">나무에서 <span class="text-pink-500">듣기 좋은 다정한 말</span>만 모두 터치해요!</p>
-      </div>
-
-      <!-- 말랑이 나무 일러스트 & 열매 영역 -->
-      <div class="relative w-full h-[280px] bg-sky-50 rounded-2xl border-2 border-emerald-100 overflow-hidden flex items-center justify-center">
-        <!-- 나무 줄기/이파리 배경 SVG -->
-        <svg class="absolute bottom-0 w-72 h-64 z-0 opacity-90" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M 46 100 L 46 65 Q 46 55 50 55 Q 54 55 54 65 L 54 100 Z" fill="#78350F" />
-          <circle cx="50" cy="40" r="28" fill="#15803D"/>
-          <circle cx="36" cy="48" r="20" fill="#16A34A"/>
-          <circle cx="64" cy="44" r="22" fill="#22C55E"/>
-          <circle cx="50" cy="26" r="18" fill="#4ADE80"/>
-        </svg>
-
-        <!-- 열매들 배치용 컨테이너 (6개 수량 제한) -->
-        <div id="fruit-container" class="absolute inset-0 z-10"></div>
-      </div>
-
-      <div id="tree-guide" class="text-base font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 w-full min-h-[44px] flex items-center justify-center">
-        열매를 콕 누르면 소리가 나요!
-      </div>
-    </div>
-
-    <!-- [화면 3] 게임 2: 다정한 카드 맞추기 -->
-    <div id="screen-cards" class="w-full bg-white rounded-[28px] border-8 border-sky-200 p-5 flex flex-col items-center text-center custom-shadow gap-4 hidden">
-      <div class="w-full flex justify-between items-center pb-2 border-b border-sky-100">
-        <button onclick="goHome()" class="text-sm font-bold text-sky-600 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">🏠 처음으로</button>
-        <span class="text-sm font-bold text-slate-500">맞춘 짝: <span id="card-matches" class="text-sky-600 text-base">0</span> / 4</span>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-black text-sky-700">🃏 똑같은 말 카드 찾기</h3>
-        <p class="text-xs text-slate-500 font-bold">두 장을 선택해 <span class="text-sky-500">똑같이 생긴 다정한 말 카드</span>의 짝을 맞춰봐요!</p>
-      </div>
-
-      <!-- 카드 그리드 판 (4x2 배열로 8장의 카드를 예쁘게 배치) -->
-      <div id="card-grid" class="grid grid-cols-4 gap-2 w-full max-w-sm py-2"></div>
-
-      <div id="card-guide" class="text-base font-bold text-sky-700 bg-sky-50 px-4 py-2 rounded-xl border border-sky-100 w-full min-h-[44px] flex items-center justify-center">
-        똑같이 생긴 예쁜 단어 카드를 찾아보세요!
-      </div>
-    </div>
-
-    <!-- [화면 4] 게임 3: 토닥토닥 상황극 -->
-    <div id="screen-story" class="w-full bg-white rounded-[28px] border-8 border-violet-200 p-5 flex flex-col items-center text-center custom-shadow gap-4 hidden">
-      <div class="w-full flex justify-between items-center pb-2 border-b border-violet-100">
-        <button onclick="goHome()" class="text-sm font-bold text-violet-600 bg-violet-50 px-3 py-1 rounded-full border border-violet-200">🏠 처음으로</button>
-        <span class="text-sm font-bold text-slate-500">상황극: <span id="story-progress" class="text-violet-600 text-base">1</span> / 3</span>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-black text-violet-700">💬 토닥토닥 상황극</h3>
-        <p class="text-xs text-slate-500 font-bold">친구가 힘든 상황이래요. <span class="text-violet-500">가장 따뜻한 대답</span>을 골라주세요!</p>
-      </div>
-
-      <!-- 상황 일러스트 삽입을 위한 컴포넌트 -->
-      <div class="w-full bg-violet-50 border-2 border-violet-100 rounded-2xl p-4 flex flex-col items-center gap-3">
-        <!-- SVG 그림 렌더링 컨테이너 -->
-        <div id="story-illustration" class="floating-effect"></div>
-        <p id="story-text" class="text-base font-bold text-slate-700 leading-relaxed tracking-tight">
-          불러오는 중...
-        </p>
-      </div>
-
-      <!-- 정답 선택지 버튼 2개 -->
-      <div class="w-full flex flex-col gap-2.5 mt-1">
-        <button id="story-choice-a" onclick="chooseStoryAnswer('A')" class="game-btn w-full bg-white hover:bg-violet-50 text-slate-700 text-base font-bold py-3.5 px-4 rounded-2xl border-2 border-violet-200 hover:border-violet-300 custom-shadow flex items-center gap-2">
-          <span class="bg-violet-100 text-violet-600 w-6 h-6 flex items-center justify-center rounded-lg text-sm">1</span>
-          <span id="story-choice-a-text" class="text-left flex-1 leading-snug">보기 1</span>
-        </button>
-        <button id="story-choice-b" onclick="chooseStoryAnswer('B')" class="game-btn w-full bg-white hover:bg-violet-50 text-slate-700 text-base font-bold py-3.5 px-4 rounded-2xl border-2 border-violet-200 hover:border-violet-300 custom-shadow flex items-center gap-2">
-          <span class="bg-violet-100 text-violet-600 w-6 h-6 flex items-center justify-center rounded-lg text-sm">2</span>
-          <span id="story-choice-b-text" class="text-left flex-1 leading-snug">보기 2</span>
+    <!-- Kiosk Content Area (Dynamic Screens) -->
+    <main class="flex-1 flex overflow-hidden relative bg-yellow-50/50">
+      
+      <!-- SCREEN 1: Welcome Screen -->
+      <div id="screen-welcome" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-gradient-to-b from-yellow-50 to-amber-100 transition-all duration-300 z-10">
+        <div class="animate-bounce mb-6">
+          <span class="text-8xl md:text-9xl">🏪</span>
+        </div>
+        <h2 class="text-4xl md:text-5xl text-amber-800 mb-2 leading-snug">어서오세요! <br class="md:hidden">재미있는 시장놀이 마트입니다.</h2>
+        <p class="text-xl md:text-2xl text-amber-600 mb-8 font-medium">모든 물건은 하나에 <span class="text-rose-500 font-extrabold text-3xl">1,000원</span>이에요!</p>
+        
+        <button onclick="changeScreen('shop')" class="group relative px-12 py-6 bg-rose-500 hover:bg-rose-600 text-white text-3xl md:text-4xl rounded-3xl font-bold transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-[0_8px_0_0_#be123c] hover:shadow-[0_6px_0_0_#be123c] active:translate-y-2 border-2 border-rose-700">
+          🛒 시작하기! (터치해줘)
         </button>
       </div>
 
-      <div id="story-guide" class="text-base font-bold text-violet-700 bg-violet-50 px-4 py-2 rounded-xl border border-violet-100 w-full min-h-[44px] flex items-center justify-center">
-        친구가 안심할 말을 골라봐요!
-      </div>
-    </div>
+      <!-- SCREEN 2: Shopping Screen -->
+      <div id="screen-shop" class="absolute inset-0 flex flex-col md:flex-row transition-all duration-300 opacity-0 pointer-events-none z-0">
+        <!-- Left: Category Sidebar -->
+        <aside class="w-full md:w-1/4 bg-amber-100/80 p-4 border-b-4 md:border-b-0 md:border-r-4 border-yellow-200 flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible md:overflow-y-auto shrink-0 scrollbar-none">
+          <h3 class="text-amber-800 text-xl font-bold mb-2 hidden md:block border-b-2 border-amber-200 pb-2">가게 고르기</h3>
+          <button onclick="selectCategory('all')" id="btn-cat-all" class="cat-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-3 bg-white text-amber-900 text-xl rounded-2xl border-2 border-amber-300 shadow transition-all hover:bg-amber-50">
+            <span class="text-2xl">🌟</span>
+            <span class="whitespace-nowrap">모두 보기</span>
+          </button>
+          <button onclick="selectCategory('bakery')" id="btn-cat-bakery" class="cat-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-3 bg-white text-amber-900 text-xl rounded-2xl border-2 border-transparent shadow transition-all hover:bg-amber-50">
+            <span class="text-2xl">🍞</span>
+            <span class="whitespace-nowrap">베이커리</span>
+          </button>
+          <button onclick="selectCategory('convenience')" id="btn-cat-convenience" class="cat-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-3 bg-white text-amber-900 text-xl rounded-2xl border-2 border-transparent shadow transition-all hover:bg-amber-50">
+            <span class="text-2xl">🏪</span>
+            <span class="whitespace-nowrap">편의점</span>
+          </button>
+          <button onclick="selectCategory('stationery')" id="btn-cat-stationery" class="cat-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-3 bg-white text-amber-900 text-xl rounded-2xl border-2 border-transparent shadow transition-all hover:bg-amber-50">
+            <span class="text-2xl">✏️</span>
+            <span class="whitespace-nowrap">문구점</span>
+          </button>
+          <button onclick="selectCategory('vegetable')" id="btn-cat-vegetable" class="cat-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-3 bg-white text-amber-900 text-xl rounded-2xl border-2 border-transparent shadow transition-all hover:bg-amber-50">
+            <span class="text-2xl">🥕</span>
+            <span class="whitespace-nowrap">야채가게</span>
+          </button>
+        </aside>
 
-    <!-- [화면 5] 결과 스크린 (종료 및 축하) -->
-    <div id="screen-end" class="w-full bg-white rounded-[28px] border-8 border-pink-200 p-6 flex flex-col items-center text-center custom-shadow gap-5 hidden">
-      <div class="pulse-effect">
-        <!-- 축하 화관 캐릭터 SVG -->
-        <svg class="w-36 h-36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="55" r="32" fill="#FEF08A" stroke="#EAB308" stroke-width="3"/>
-          <circle cx="36" cy="48" r="4.5" fill="#1E293B"/>
-          <circle cx="64" cy="48" r="4.5" fill="#1E293B"/>
-          <circle cx="34" cy="46" r="1.5" fill="#FFFFFF"/>
-          <circle cx="62" cy="46" r="1.5" fill="#FFFFFF"/>
-          <!-- 볼터치 -->
-          <circle cx="28" cy="55" r="5" fill="#FDA4AF" opacity="0.8"/>
-          <circle cx="72" cy="55" r="5" fill="#FDA4AF" opacity="0.8"/>
-          <!-- 함박 웃음 입 -->
-          <path d="M 40 60 Q 50 72 60 60" stroke="#1E293B" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <!-- Center: Item List -->
+        <section class="flex-1 p-6 overflow-y-auto flex flex-col">
+          <div class="flex justify-between items-center mb-4">
+            <h3 id="current-category-title" class="text-2xl md:text-3xl text-amber-900 font-bold">✨ 전체 물건들</h3>
+            <span class="text-rose-500 font-bold bg-rose-50 px-3 py-1 rounded-full border border-rose-200">모두 1,000원!</span>
+          </div>
           
-          <!-- 머리 위 꽃 화관 일러스트 -->
-          <circle cx="32" cy="28" r="5" fill="#F472B6"/>
-          <circle cx="41" cy="23" r="5" fill="#38BDF8"/>
-          <circle cx="50" cy="21" r="5" fill="#FBBF24"/>
-          <circle cx="59" cy="23" r="5" fill="#A78BFA"/>
-          <circle cx="68" cy="28" r="5" fill="#34D399"/>
-        </svg>
+          <!-- Product Grid -->
+          <div id="product-grid" class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Products will be dynamically generated here -->
+          </div>
+        </section>
+
+        <!-- Right / Bottom: Cart Section -->
+        <section class="w-full md:w-80 bg-orange-50 border-t-4 md:border-t-0 md:border-l-4 border-yellow-200 p-4 flex flex-col shrink-0 h-72 md:h-full">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xl font-bold text-amber-900 flex items-center gap-1">
+              <span>🛒</span> 장바구니 <span id="cart-count" class="bg-rose-500 text-white rounded-full text-sm px-2 py-0.5">0</span>
+            </h3>
+            <button onclick="clearCart()" class="text-sm text-amber-600 hover:text-rose-500 font-bold bg-white px-2 py-1 rounded border border-amber-200">전체 비우기</button>
+          </div>
+
+          <!-- Cart Scrollable List -->
+          <div id="cart-items" class="flex-1 overflow-y-auto space-y-2 mb-4 bg-white border-2 border-yellow-100 rounded-2xl p-2">
+            <!-- Empty cart placeholder -->
+            <div id="cart-empty-state" class="h-full flex flex-col items-center justify-center text-amber-400 p-4">
+              <span class="text-4xl mb-1">🧐</span>
+              <p class="text-sm font-bold">물건을 담아보세요!</p>
+            </div>
+          </div>
+
+          <!-- Total Price Section -->
+          <div class="bg-amber-100 p-3 rounded-2xl border border-yellow-200 mb-4 flex justify-between items-center">
+            <span class="text-lg text-amber-800 font-bold">낼 돈:</span>
+            <span id="cart-total" class="text-3xl text-rose-600 font-extrabold">0원</span>
+          </div>
+
+          <!-- Proceed to Payment Button -->
+          <button id="checkout-btn" onclick="goToPaymentMethod()" disabled class="w-full py-4 bg-rose-400 text-white text-2xl rounded-2xl font-bold shadow-lg transition-all duration-200 border-2 border-rose-500 cursor-not-allowed opacity-50">
+            결제하기 ➔
+          </button>
+        </section>
       </div>
 
-      <div>
-        <h2 class="text-2xl font-black text-pink-600 mb-1">🎉 참 잘했어요! 🎉</h2>
-        <p class="text-lg text-slate-700 font-bold mb-3">우리는 이제 멋진 <br><span class="text-emerald-600 text-xl">✨ 다정한 말을 배우는 우리들! ✨</span></p>
-        <div class="bg-amber-50 px-5 py-2.5 rounded-2xl border border-amber-200 inline-block">
-          <p class="text-sm text-amber-800 font-bold">오늘 모은 빛나는 별</p>
-          <p class="text-2xl font-black text-amber-500">⭐ <span id="end-score">0</span>개 ⭐</p>
+      <!-- SCREEN 3: Payment Method Screen -->
+      <div id="screen-payment-method" class="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-yellow-50 to-amber-50 transition-all duration-300 opacity-0 pointer-events-none z-0">
+        <button onclick="changeScreen('shop')" class="absolute top-4 left-4 bg-amber-200 hover:bg-amber-300 text-amber-800 px-4 py-2 rounded-xl text-lg font-bold transition">
+          ↩ 뒤로 가기
+        </button>
+
+        <h2 class="text-4xl text-amber-900 font-bold mb-2">어떻게 결제할까요?</h2>
+        <p class="text-xl text-amber-600 mb-10">마음에 드는 결제 방법을 눌러주세요!</p>
+
+        <!-- Payment Total Info -->
+        <div class="bg-white px-8 py-4 rounded-3xl border-4 border-yellow-300 shadow-md mb-10 text-center">
+          <p class="text-amber-700 text-lg">결제할 금액</p>
+          <p id="payment-method-total" class="text-5xl text-rose-500 font-black">3,000원</p>
+        </div>
+
+        <!-- Cash vs Card Buttons -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-2xl px-4">
+          <!-- Cash Payment -->
+          <button onclick="startPayment('cash')" class="group p-6 bg-emerald-400 hover:bg-emerald-500 text-white rounded-[2rem] border-4 border-emerald-500 shadow-lg transition-transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center">
+            <span class="text-8xl mb-4 group-hover:animate-bounce">💵</span>
+            <span class="text-3xl font-bold">현금으로 낼래요</span>
+            <span class="text-sm bg-emerald-600/30 px-3 py-1 rounded-full mt-2">지폐를 쏙쏙 넣기</span>
+          </button>
+
+          <!-- Card Payment -->
+          <button onclick="startPayment('card')" class="group p-6 bg-sky-400 hover:bg-sky-500 text-white rounded-[2rem] border-4 border-sky-500 shadow-lg transition-transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center">
+            <span class="text-8xl mb-4 group-hover:animate-bounce">💳</span>
+            <span class="text-3xl font-bold">카드로 낼래요</span>
+            <span class="text-sm bg-sky-600/30 px-3 py-1 rounded-full mt-2">카드기에 찰칵 꽂기</span>
+          </button>
         </div>
       </div>
 
-      <p class="text-xs text-slate-500 font-bold px-2 leading-relaxed">
-        다정한 말을 들으면 내 친구도, 내 마음도 촉촉한 꽃밭처럼 이쁘게 피어난대요. 오늘 배운 예쁜 말을 집에 가서 부모님께도 말해주기로 약속해요! 🥰
-      </p>
+      <!-- SCREEN 4: Cash Payment Simulator -->
+      <div id="screen-pay-cash" class="absolute inset-0 flex flex-col items-center justify-center p-6 bg-emerald-50/50 transition-all duration-300 opacity-0 pointer-events-none z-0">
+        <button onclick="changeScreen('payment-method')" class="absolute top-4 left-4 bg-emerald-200 hover:bg-emerald-300 text-emerald-800 px-4 py-2 rounded-xl text-lg font-bold transition">
+          ↩ 뒤로 가기
+        </button>
 
-      <button onclick="goHome()" class="game-btn w-full bg-pink-500 hover:bg-pink-600 text-white text-lg font-bold py-3.5 px-6 rounded-2xl border-b-6 border-pink-700 custom-shadow">
-        🏠 처음으로 돌아가기
-      </button>
-    </div>
+        <h2 class="text-4xl text-emerald-900 font-bold mb-4">💵 현금을 넣어주세요!</h2>
+        
+        <!-- Cash Status Panel -->
+        <div class="bg-white p-6 rounded-3xl border-4 border-emerald-300 shadow-md w-full max-w-md text-center mb-8">
+          <div class="grid grid-cols-2 gap-4 border-b border-emerald-100 pb-4 mb-4">
+            <div>
+              <p class="text-emerald-700 font-bold text-sm">내야할 돈</p>
+              <p id="cash-target-amount" class="text-2xl text-emerald-950 font-black">3,000원</p>
+            </div>
+            <div>
+              <p class="text-rose-500 font-bold text-sm">남은 돈</p>
+              <p id="cash-remaining-amount" class="text-2xl text-rose-500 font-black">3,000원</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center px-4">
+            <span class="text-emerald-700 font-bold text-lg">넣은 돈:</span>
+            <span id="cash-inserted-amount" class="text-3xl text-emerald-500 font-black">0원</span>
+          </div>
+        </div>
 
-  </main>
+        <!-- Cash Insertion Area Simulator -->
+        <div class="relative w-full max-w-sm h-64 border-4 border-dashed border-emerald-300 bg-emerald-100/50 rounded-3xl flex flex-col items-center justify-center overflow-hidden mb-8">
+          <!-- The Piggy/Slot animation trigger zone -->
+          <div class="absolute top-1/4 w-3/4 h-8 bg-emerald-950 rounded-full border-t-2 border-emerald-800 flex items-center justify-center shadow-inner z-10">
+            <div class="text-[10px] text-emerald-200 font-mono tracking-widest">INSERT CASH</div>
+          </div>
+          
+          <p class="text-emerald-800 text-sm mt-16 font-bold text-center">아래의 지폐를 터치해서<br>돈을 쏙 집어넣어 보세요!</p>
 
-  <!-- 하단 발문 -->
-  <footer class="w-full max-w-md text-center py-2 text-slate-500 text-xs font-bold z-10">
-    <span>❤️ 소중한 내 친구를 부드러운 목소리로 불러보세요.</span>
-  </footer>
+          <!-- Animated sliding bill container -->
+          <div id="flying-bill" class="absolute bottom-4 hidden z-20">
+            <div class="w-48 h-24 bg-gradient-to-r from-teal-400 to-emerald-500 rounded-xl border-4 border-teal-600 shadow-lg flex flex-col justify-between p-2 text-white">
+              <div class="flex justify-between text-sm font-bold"><span>1000</span><span>1000</span></div>
+              <div class="text-center font-bold text-lg tracking-wider">천 원</div>
+              <div class="flex justify-between text-sm font-bold"><span>한국은행</span><span>1000</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clickable Money (The Bills the kid can tap to insert) -->
+        <div class="flex gap-4">
+          <button onclick="insertMoney(1000)" class="transform active:scale-95 transition-all focus:outline-none">
+            <!-- 1000 KRW Bill Graphic -->
+            <div class="w-52 h-24 bg-gradient-to-r from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 rounded-xl border-4 border-teal-600 shadow-[0_6px_0_0_#0d9488] active:translate-y-1.5 active:shadow-[0_2px_0_0_#0d9488] flex flex-col justify-between p-2 text-white text-left font-bold cursor-pointer">
+              <div class="flex justify-between text-xs">
+                <span>1000</span>
+                <span>1000</span>
+              </div>
+              <div class="text-center text-lg tracking-widest font-extrabold">💵 1,000원 넣기</div>
+              <div class="flex justify-between text-xs">
+                <span>한국은행</span>
+                <span>1000</span>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- SCREEN 5: Card Payment Simulator -->
+      <div id="screen-pay-card" class="absolute inset-0 flex flex-col items-center justify-center p-6 bg-sky-50/50 transition-all duration-300 opacity-0 pointer-events-none z-0">
+        <button onclick="changeScreen('payment-method')" class="absolute top-4 left-4 bg-sky-200 hover:bg-sky-300 text-sky-800 px-4 py-2 rounded-xl text-lg font-bold transition">
+          ↩ 뒤로 가기
+        </button>
+
+        <h2 class="text-4xl text-sky-900 font-bold mb-4">💳 카드를 넣어주세요!</h2>
+
+        <!-- Card Terminal Simulator Graphic -->
+        <div class="relative w-80 h-96 bg-slate-700 rounded-3xl border-8 border-slate-600 shadow-2xl flex flex-col items-center p-4 text-white overflow-hidden mb-6">
+          <!-- Screen -->
+          <div class="w-full bg-cyan-900 border-4 border-cyan-700 h-24 rounded-2xl p-3 text-cyan-200 flex flex-col justify-between font-mono">
+            <div class="text-xs flex justify-between">
+              <span>CARD PAY v1.0</span>
+              <span class="animate-pulse">●</span>
+            </div>
+            <div id="card-terminal-display" class="text-xl text-center font-bold font-sans tracking-wide">
+              IC카드를 꽂아주세요
+            </div>
+            <div class="text-right text-sm text-yellow-300 font-bold" id="card-terminal-price">
+              3,000원
+            </div>
+          </div>
+
+          <!-- IC Card Slot (Interactive Drop Target or Animation Slot) -->
+          <div class="w-2/3 h-2 bg-slate-950 rounded-full border-t border-slate-800 shadow-inner mt-12 mb-4 relative">
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-[10px] text-slate-400 font-mono">INSERT CARD SLOT</div>
+          </div>
+
+          <!-- Animated Card inside Terminal -->
+          <div id="terminal-card" class="absolute bottom-20 w-44 h-28 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-xl border-2 border-amber-600 shadow-lg flex-col p-2 text-white hidden z-10">
+            <!-- Chip representation -->
+            <div class="w-8 h-6 bg-yellow-300 rounded-md border border-amber-500 mb-2"></div>
+            <div class="text-xs font-bold tracking-widest text-shadow">KID'S CLUB CARD</div>
+            <div class="text-right text-xs mt-4">⭐️ MARKET PLAY</div>
+          </div>
+
+          <!-- Arrow Indicators -->
+          <div class="absolute bottom-4 flex flex-col items-center text-slate-400 text-xs gap-1">
+            <span>위쪽 투입구에 카드를 꽂아보세요!</span>
+            <span class="animate-bounce">↓</span>
+          </div>
+        </div>
+
+        <!-- The Clickable Card (User triggers payment here) -->
+        <div id="user-card-button" class="flex flex-col items-center">
+          <button onclick="insertCard()" class="transform active:scale-95 transition-all focus:outline-none">
+            <div class="w-56 h-32 bg-gradient-to-tr from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 rounded-2xl border-4 border-amber-500 shadow-[0_8px_0_0_#d97706] active:translate-y-2 active:shadow-[0_2px_0_0_#d97706] flex flex-col justify-between p-3 text-white text-left font-bold cursor-pointer">
+              <!-- Chip -->
+              <div class="w-10 h-8 bg-yellow-300 rounded-lg border-2 border-amber-600 mb-2 shadow"></div>
+              <div>
+                <p class="text-sm tracking-wider">시장놀이 전용카드</p>
+                <p class="text-lg font-black tracking-widest mt-1">💳 카드 넣기</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- SCREEN 6: Success & Cute Receipt -->
+      <div id="screen-receipt" class="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-yellow-50 to-orange-100 transition-all duration-300 opacity-0 pointer-events-none z-0 overflow-y-auto">
+        <canvas id="confetti-canvas" class="absolute inset-0 pointer-events-none z-10 w-full h-full"></canvas>
+
+        <h2 class="text-4xl text-rose-600 font-extrabold mb-2 z-20 flex items-center gap-2">
+          <span>🎉</span> 결제 성공! <span>🎉</span>
+        </h2>
+        <p class="text-xl text-amber-800 mb-6 font-bold z-20 text-center">와아! 성공적으로 물건을 구매했어요!</p>
+
+        <!-- Receipt Box (Simulating real printing receipt) -->
+        <div class="w-full max-w-sm bg-white text-slate-800 p-6 rounded-2xl shadow-xl border-t-8 border-rose-500 flex flex-col font-mono relative z-20 max-h-[420px] overflow-y-auto">
+          <!-- Receipt jagged teeth effect using CSS styling (simulated simply) -->
+          <div class="text-center border-b-2 border-dashed border-slate-300 pb-4 mb-4">
+            <p class="text-2xl font-bold font-sans text-amber-900 flex justify-center items-center gap-2">
+              <span>🎒</span> 새싹 마트 영수증
+            </p>
+            <p class="text-xs text-slate-500 mt-1" id="receipt-date">2026-06-11 00:00:00</p>
+          </div>
+
+          <!-- Items Purchased List -->
+          <div id="receipt-items-list" class="flex-1 space-y-2 mb-4 text-sm font-sans">
+            <!-- Items rendered dynamically -->
+          </div>
+
+          <!-- Pricing Calculations -->
+          <div class="border-t-2 border-dashed border-slate-300 pt-4 space-y-1.5 text-sm">
+            <div class="flex justify-between">
+              <span>총 금액:</span>
+              <span id="receipt-total" class="font-bold">3,000원</span>
+            </div>
+            <div class="flex justify-between text-emerald-600">
+              <span id="receipt-pay-method-label">넣은 현금:</span>
+              <span id="receipt-inserted" class="font-bold">3,000원</span>
+            </div>
+            <div class="flex justify-between text-rose-500 border-t border-slate-200 pt-1.5 text-base font-bold">
+              <span>거스름돈:</span>
+              <span id="receipt-change">0원</span>
+            </div>
+          </div>
+
+          <div class="text-center mt-6 text-sm text-slate-400 border-t border-dashed border-slate-200 pt-4 font-sans">
+            <p class="font-bold text-amber-700/80">방문해주셔서 감사합니다!</p>
+            <p class="text-xs">다음 시장놀이에 또 만나요 ❤️</p>
+          </div>
+        </div>
+
+        <!-- Finish Button -->
+        <button onclick="resetAll()" class="mt-6 px-10 py-4 bg-amber-500 hover:bg-amber-600 text-white text-2xl rounded-2xl font-bold transition-all shadow-[0_6px_0_0_#b45309] hover:shadow-[0_4px_0_0_#b45309] active:translate-y-1.5 z-20 border-2 border-amber-700">
+          🏠 처음으로 돌아가기
+        </button>
+      </div>
+
+    </main>
+
+    <!-- Footer decoration (Kiosk base mock) -->
+    <footer class="bg-amber-800 text-amber-200 py-3 text-center text-sm font-sans border-t-4 border-amber-900 flex justify-between px-6 items-center">
+      <span>🌱 키오스크를 터치해서 시장놀이 결제를 연습해보세요!</span>
+      <span class="text-amber-400 font-bold">재미있는 가게 놀이</span>
+    </footer>
+  </div>
 
   <script>
-    // --- 글로벌 상태값 관리 ---
-    let globalScore = 0;
-    let currentMode = 'home';
+    // --- DATABASE & SOUNDS SETUP ---
+    
+    // Store data config (Provided by user request)
+    // Pricing rule: all items are 1,000 KRW
+    const products = [
+      // Bakery
+      { id: 'pororo_bread', category: 'bakery', name: '뽀로로빵', icon: '🍞', price: 1000 },
+      { id: 'organic_drink_b', category: 'bakery', name: '유기농 음료수', icon: '🧃', price: 1000 },
+      // Convenience Store
+      { id: 'snack', category: 'convenience', name: '과자', icon: '🍪', price: 1000 },
+      { id: 'organic_drink_c', category: 'convenience', name: '유기농 음료수', icon: '🧃', price: 1000 },
+      // Stationery
+      { id: 'clay', category: 'stationery', name: '클레이', icon: '🎨', price: 1000 },
+      { id: 'lego', category: 'stationery', name: '레고', icon: '🧱', price: 1000 },
+      { id: 'crown', category: 'stationery', name: '왕관', icon: '👑', price: 1000 },
+      { id: 'tiktok_block', category: 'stationery', name: '틱톡블럭', icon: '🧩', price: 1000 },
+      { id: 'water_gun', category: 'stationery', name: '물총', icon: '🔫', price: 1000 },
+      { id: 'coloring_book', category: 'stationery', name: '색칠놀이책', icon: '📚', price: 1000 },
+      { id: 'five_color_pen', category: 'stationery', name: '5색 펜', icon: '🖊️', price: 1000 },
+      // Vegetable
+      { id: 'cucumber', category: 'vegetable', name: '오이', icon: '🥒', price: 1000 },
+      { id: 'zucchini', category: 'vegetable', name: '애호박', icon: '🥒', price: 1000 }, // represented as green zucchini/cucumber icon
+      { id: 'mushroom', category: 'vegetable', name: '버섯', icon: '🍄', price: 1000 }
+    ];
 
-    // 귀여운 신디사이저 효과음 재생기 (AudioContext)
-    const playSound = (type) => {
+    // --- APPLICATION STATE ---
+    let cart = {}; // keyed by product id: { product, quantity }
+    let currentCategory = 'all';
+    let currentStep = 'welcome';
+    let voiceEnabled = true;
+    let paymentMethodSelected = null; // 'cash' or 'card'
+    let insertedCash = 0;
+    
+    // Web Audio Synthesizer for high quality arcade sounds without external media
+    function playSound(type) {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-        
-        if (type === 'success') {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5 (도)
-          osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5 (미)
-          osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5 (솔)
-          gain.gain.setValueAtTime(0.2, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.35);
-        } else if (type === 'fail') {
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(260, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.25);
-          gain.gain.setValueAtTime(0.2, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.25);
-        } else if (type === 'complete') {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-          osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
-          osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16);
-          osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.24); // C6 (옥타브 도)
-          gain.gain.setValueAtTime(0.2, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.5);
-        }
-      } catch(e) {
-        console.warn("오디오 지원 미흡");
-      }
-    };
 
-    // 브라우저 낭독 기능 (TTS) - 음성 종료 콜백 탑재로 자연스러운 팝업 유도
-    // 레이트속도를 1.15로 높이고 자연스럽고 부드럽게 빨리 읽어주도록 개선
-    const speakWord = (text, onEndCallback) => {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
+        if (type === 'click') {
+          osc.frequency.setValueAtTime(550, ctx.currentTime);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.08);
+        } else if (type === 'add') {
+          // Playful ascending sound
+          osc.frequency.setValueAtTime(350, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.15);
+        } else if (type === 'remove') {
+          // Playful descending sound
+          osc.frequency.setValueAtTime(600, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.15);
+        } else if (type === 'card_insert') {
+          // Machine sliding click sound
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(100, ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(900, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.03, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.1);
+        } else if (type === 'cash_in') {
+          // Cha-ching coin register sound
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(800, ctx.currentTime);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.15);
+          
+          setTimeout(() => {
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1000, ctx.currentTime);
+            gain2.gain.setValueAtTime(0.05, ctx.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+            osc2.start();
+            osc2.stop(ctx.currentTime + 0.2);
+          }, 80);
+        } else if (type === 'success') {
+          // Major chord success celebration!
+          const playNote = (freq, delay, duration) => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+            g.gain.setValueAtTime(0.08, ctx.currentTime + delay);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+            o.start(ctx.currentTime + delay);
+            o.stop(ctx.currentTime + delay + duration);
+          };
+          playNote(523.25, 0, 0.15); // C5
+          playNote(659.25, 0.1, 0.15); // E5
+          playNote(783.99, 0.2, 0.15); // G5
+          playNote(1046.50, 0.3, 0.5); // C6
+        }
+      } catch (err) {
+        console.log('Audio Context issues: ', err);
+      }
+    }
+
+    // Text to Speech Voice guidance
+    function speak(text) {
+      if (!voiceEnabled) return;
+      try {
+        window.speechSynthesis.cancel(); // kill ongoing voices
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ko-KR';
-        utterance.rate = 1.15; // 7살 집중력에 맞는 부드럽고 경쾌한 1.15배속 설정
-        utterance.pitch = 1.05; // 쇳소리를 죽인 자연스러운 음역대
+        utterance.rate = 1.15; // slightly cheerful / faster pacing for kids
+        utterance.pitch = 1.2; // sweet tone
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.log('Speech synthesis issues: ', err);
+      }
+    }
+
+    function toggleVoice() {
+      voiceEnabled = !voiceEnabled;
+      const icon = document.getElementById('voice-icon');
+      const text = document.getElementById('voice-text');
+      
+      if (voiceEnabled) {
+        icon.textContent = '🔊';
+        text.textContent = '목소리 켬';
+        speak('키오스크 안내 도우미 목소리를 켰어요!');
+      } else {
+        icon.textContent = '🔇';
+        text.textContent = '목소리 끔';
+      }
+      playSound('click');
+    }
+
+    // --- SCREEN NAVIGATION HANDLER ---
+    function changeScreen(screenId) {
+      playSound('click');
+      
+      // List of all screens
+      const screens = ['welcome', 'shop', 'payment-method', 'pay-cash', 'pay-card', 'receipt'];
+      
+      screens.forEach(s => {
+        const element = document.getElementById(`screen-${s}`);
+        if (s === screenId) {
+          element.classList.remove('opacity-0', 'pointer-events-none', 'z-0');
+          element.classList.add('opacity-100', 'z-10');
+        } else {
+          element.classList.add('opacity-0', 'pointer-events-none', 'z-0');
+          element.classList.remove('opacity-100', 'z-10');
+        }
+      });
+
+      currentStep = screenId;
+
+      // Welcome Screen Prompts
+      if (screenId === 'welcome') {
+        speak('어서오세요! 시장놀이 키오스크입니다. 물품을 구매하려면 시작하기 버튼을 눌러주세요!');
+      }
+      // Shop Screen Prompts
+      else if (screenId === 'shop') {
+        renderProducts();
+        updateCartUI();
+        speak('원하는 카테고리를 고르고, 장바구니에 물건들을 쏘옥 담아보세요!');
+      }
+      // Payment Method Selection Screen
+      else if (screenId === 'payment-method') {
+        const total = getCartTotal();
+        document.getElementById('payment-method-total').textContent = `${total.toLocaleString()}원`;
+        speak(`결제할 금액은 총 ${total}원입니다. 현금으로 결제할까요, 카드로 결제할까요?`);
+      }
+    }
+
+    // --- PRODUCT & CATEGORY RENDERING ---
+    function selectCategory(categoryId) {
+      currentCategory = categoryId;
+      playSound('click');
+      
+      // Update sidebar visual selection
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.classList.remove('border-amber-300', 'bg-amber-200/50');
+        btn.classList.add('border-transparent', 'bg-white');
+      });
+
+      const activeBtn = document.getElementById(`btn-cat-${categoryId}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'bg-white');
+        activeBtn.classList.add('border-amber-300', 'bg-amber-200/50');
+      }
+
+      // Title update
+      const titleMap = {
+        all: '✨ 전체 물건들',
+        bakery: '🍞 맛있는 빵집',
+        convenience: '🏪 시원한 편의점',
+        stationery: '✏️ 신기한 문구점',
+        vegetable: '🥕 상큼한 야채가게'
+      };
+      document.getElementById('current-category-title').textContent = titleMap[categoryId];
+
+      renderProducts();
+      speak(`${titleMap[categoryId].replace(/[^\w\s가-힣]/g, '')} 가게의 물건들을 보여줄게요.`);
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('product-grid');
+      grid.innerHTML = '';
+
+      const filtered = currentCategory === 'all' 
+        ? products 
+        : products.filter(p => p.category === currentCategory);
+
+      filtered.forEach(p => {
+        // Create product card
+        const card = document.createElement('button');
+        card.className = "bg-white p-4 rounded-3xl border-2 border-yellow-200 shadow-md hover:shadow-lg transition-all duration-200 transform active:scale-95 flex flex-col items-center justify-between gap-2 border-b-4 border-yellow-300 active:translate-y-1";
+        card.onclick = () => addToCart(p.id);
+
+        card.innerHTML = `
+          <span class="text-6xl md:text-7xl transform transition group-hover:scale-110 select-none">${p.icon}</span>
+          <div class="text-center w-full">
+            <h4 class="text-lg md:text-xl font-bold text-amber-900 truncate">${p.name}</h4>
+            <p class="text-rose-500 font-extrabold text-lg mt-1">${p.price.toLocaleString()}원</p>
+          </div>
+          <span class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs px-3 py-1 rounded-full font-bold w-full text-center">
+            장바구니 담기
+          </span>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // --- CART FUNCTIONALITIES ---
+    function addToCart(productId) {
+      playSound('add');
+      const product = products.find(p => p.id === productId);
+      
+      if (cart[productId]) {
+        cart[productId].quantity += 1;
+      } else {
+        cart[productId] = { product, quantity: 1 };
+      }
+
+      updateCartUI();
+      speak(`${product.name} 하나를 장바구니에 담았습니다!`);
+
+      // Apply temporary visual bounce effect on card / total
+      const cartTotalEl = document.getElementById('cart-total');
+      cartTotalEl.classList.add('add-bounce');
+      setTimeout(() => cartTotalEl.classList.remove('add-bounce'), 300);
+    }
+
+    function removeFromCart(productId) {
+      playSound('remove');
+      if (cart[productId]) {
+        const name = cart[productId].product.name;
+        cart[productId].quantity -= 1;
+        if (cart[productId].quantity <= 0) {
+          delete cart[productId];
+        }
+        updateCartUI();
+        speak(`${name}을 장바구니에서 하나 뺐습니다.`);
+      }
+    }
+
+    function clearCart() {
+      if (Object.keys(cart).length === 0) return;
+      playSound('remove');
+      cart = {};
+      updateCartUI();
+      speak('장바구니를 깨끗하게 모두 비웠습니다.');
+    }
+
+    function getCartTotal() {
+      let total = 0;
+      for (let id in cart) {
+        total += cart[id].product.price * cart[id].quantity;
+      }
+      return total;
+    }
+
+    function getCartCount() {
+      let count = 0;
+      for (let id in cart) {
+        count += cart[id].quantity;
+      }
+      return count;
+    }
+
+    function updateCartUI() {
+      const cartItemsEl = document.getElementById('cart-items');
+      const cartEmptyStateEl = document.getElementById('cart-empty-state');
+      const cartCountEl = document.getElementById('cart-count');
+      const cartTotalEl = document.getElementById('cart-total');
+      const checkoutBtn = document.getElementById('checkout-btn');
+
+      const itemsCount = getCartCount();
+      const totalAmount = getCartTotal();
+
+      cartCountEl.textContent = itemsCount;
+      cartTotalEl.textContent = `${totalAmount.toLocaleString()}원`;
+
+      if (itemsCount === 0) {
+        cartEmptyStateEl.classList.remove('hidden');
+        cartItemsEl.querySelectorAll('.cart-item-row').forEach(e => e.remove());
+        checkoutBtn.disabled = true;
+        checkoutBtn.className = "w-full py-4 bg-rose-300 text-white text-2xl rounded-2xl font-bold transition-all border-2 border-rose-300 cursor-not-allowed opacity-50";
+      } else {
+        cartEmptyStateEl.classList.add('hidden');
         
-        if (onEndCallback) {
-          utterance.onend = () => {
-            // 목소리가 완벽히 끝난 후 콜백 실행
-            onEndCallback();
+        // Remove existing items before render
+        cartItemsEl.querySelectorAll('.cart-item-row').forEach(e => e.remove());
+
+        // Render each item
+        for (let id in cart) {
+          const item = cart[id];
+          const row = document.createElement('div');
+          row.className = "cart-item-row flex justify-between items-center bg-amber-50 p-2.5 rounded-xl border border-yellow-200 text-sm";
+          
+          row.innerHTML = `
+            <div class="flex items-center gap-1.5 w-1/2">
+              <span class="text-2xl">${item.product.icon}</span>
+              <span class="font-bold text-amber-950 truncate">${item.product.name}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="removeFromCart('${id}')" class="w-6 h-6 bg-amber-200 hover:bg-amber-300 text-amber-800 rounded-full font-bold flex items-center justify-center text-xs">-</button>
+              <span class="font-extrabold text-amber-950 min-w-[12px] text-center">${item.quantity}</span>
+              <button onclick="addToCart('${id}')" class="w-6 h-6 bg-amber-200 hover:bg-amber-300 text-amber-800 rounded-full font-bold flex items-center justify-center text-xs">+</button>
+            </div>
+            <span class="font-bold text-rose-500 text-right w-16">${(item.product.price * item.quantity).toLocaleString()}원</span>
+          `;
+          cartItemsEl.appendChild(row);
+        }
+
+        checkoutBtn.disabled = false;
+        checkoutBtn.className = "w-full py-4 bg-rose-500 hover:bg-rose-600 text-white text-2xl rounded-2xl font-bold shadow-lg transition-all duration-200 border-2 border-rose-700 active:translate-y-1 active:shadow-md cursor-pointer animate-pulse";
+      }
+    }
+
+    function goToPaymentMethod() {
+      changeScreen('payment-method');
+    }
+
+    // --- PAYMENT PROCEDURES ---
+    function startPayment(method) {
+      paymentMethodSelected = method;
+      const total = getCartTotal();
+
+      if (method === 'cash') {
+        insertedCash = 0;
+        updateCashUI();
+        changeScreen('pay-cash');
+        speak('현금 계산하기 화면입니다. 아래 천 원 지폐들을 눌러서 투입구에 쏙 넣어주세요!');
+      } else if (method === 'card') {
+        changeScreen('pay-card');
+        
+        // Setup Card Terminal view values
+        document.getElementById('card-terminal-display').textContent = '카드를 넣어주세요';
+        document.getElementById('card-terminal-display').className = "text-lg text-center font-bold tracking-wide animate-pulse";
+        document.getElementById('card-terminal-price').textContent = `${total.toLocaleString()}원`;
+        document.getElementById('terminal-card').classList.add('hidden');
+        document.getElementById('user-card-button').classList.remove('hidden');
+        
+        speak(`카드 계산하기 화면입니다. 카드를 꾹 눌러 카드 투입구에 결제해 주세요!`);
+      }
+    }
+
+    // --- CASH SIMULATION ---
+    function updateCashUI() {
+      const target = getCartTotal();
+      const remaining = Math.max(0, target - insertedCash);
+
+      document.getElementById('cash-target-amount').textContent = `${target.toLocaleString()}원`;
+      document.getElementById('cash-inserted-amount').textContent = `${insertedCash.toLocaleString()}원`;
+      document.getElementById('cash-remaining-amount').textContent = `${remaining.toLocaleString()}원`;
+    }
+
+    function insertMoney(amount) {
+      const target = getCartTotal();
+      if (insertedCash >= target) return; // already fully paid
+
+      // Slide money animation trigger
+      const flyingBill = document.getElementById('flying-bill');
+      flyingBill.classList.remove('hidden');
+      flyingBill.classList.add('cash-slide');
+
+      // Cash Inserted sequence sound
+      playSound('cash_in');
+      insertedCash += amount;
+      updateCashUI();
+
+      speak(`${amount.toLocaleString()}원을 넣었습니다.`);
+
+      setTimeout(() => {
+        // Reset animation state
+        flyingBill.classList.remove('cash-slide');
+        flyingBill.classList.add('hidden');
+
+        // Check if cash total is met
+        if (insertedCash >= target) {
+          triggerPaymentSuccess();
+        }
+      }, 800);
+    }
+
+    // --- CARD SIMULATION ---
+    function insertCard() {
+      playSound('card_insert');
+      
+      const userCardBtn = document.getElementById('user-card-button');
+      const terminalCard = document.getElementById('terminal-card');
+      const display = document.getElementById('card-terminal-display');
+
+      // Hide active user card and trigger inserting animation
+      userCardBtn.classList.add('hidden');
+      terminalCard.classList.remove('hidden');
+      terminalCard.classList.add('card-slide');
+
+      display.textContent = '카드 읽는 중...';
+      display.className = "text-lg text-center font-bold text-yellow-300 font-mono tracking-widest animate-pulse";
+
+      speak('카드를 확인하고 있습니다. 잠시만 기다려주세요.');
+
+      setTimeout(() => {
+        // Card read beep!
+        playSound('cash_in');
+        display.textContent = '결제 완료! 승인성공';
+        display.className = "text-lg text-center font-bold text-green-400 font-sans tracking-wide";
+        speak('카드 승인이 완료되었습니다. 카드를 뽑으셔도 좋습니다!');
+        
+        setTimeout(() => {
+          triggerPaymentSuccess();
+        }, 1200);
+      }, 1800);
+    }
+
+    // --- PAYMENT SUCCESS & RECEIPT FLOW ---
+    function triggerPaymentSuccess() {
+      playSound('success');
+      changeScreen('receipt');
+      
+      // Render receipt information
+      const listEl = document.getElementById('receipt-items-list');
+      listEl.innerHTML = '';
+
+      for (let id in cart) {
+        const item = cart[id];
+        const row = document.createElement('div');
+        row.className = "flex justify-between";
+        row.innerHTML = `
+          <span>${item.product.icon} ${item.product.name} x ${item.quantity}</span>
+          <span class="font-bold">${(item.product.price * item.quantity).toLocaleString()}원</span>
+        `;
+        listEl.appendChild(row);
+      }
+
+      // Calculations and variables based on payment type
+      const total = getCartTotal();
+      document.getElementById('receipt-total').textContent = `${total.toLocaleString()}원`;
+
+      const payMethodLabel = document.getElementById('receipt-pay-method-label');
+      const payInserted = document.getElementById('receipt-inserted');
+      const payChange = document.getElementById('receipt-change');
+
+      if (paymentMethodSelected === 'cash') {
+        payMethodLabel.textContent = '넣은 현금:';
+        payInserted.textContent = `${insertedCash.toLocaleString()}원`;
+        payChange.textContent = `${(insertedCash - total).toLocaleString()}원`;
+      } else {
+        payMethodLabel.textContent = '신용카드:';
+        payInserted.textContent = `${total.toLocaleString()}원`;
+        payChange.textContent = '0원'; // Cards have no change
+      }
+
+      // Receipt Timestamp
+      const now = new Date();
+      const formatTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+      document.getElementById('receipt-date').textContent = formatTime;
+
+      speak('축하합니다! 결제가 완전히 끝났습니다. 영수증을 챙기고 물건을 가져가세요!');
+      
+      // Start celebration confetti falling
+      initConfetti();
+    }
+
+    // --- RESET GAME ---
+    function resetAll() {
+      cart = {};
+      paymentMethodSelected = null;
+      insertedCash = 0;
+      
+      // Stop confetti loop
+      if (confettiInterval) {
+        clearInterval(confettiInterval);
+      }
+      
+      changeScreen('welcome');
+    }
+
+    // --- CUTE CONFETTI CELEBRATION ENGINE ---
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let confetti = [];
+    let confettiInterval = null;
+
+    function initConfetti() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      
+      confetti = [];
+      for (let i = 0; i < 100; i++) {
+        confetti.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * canvas.height,
+          color: `hsl(${Math.random() * 360}, 90%, 65%)`,
+          tilt: Math.random() * 10 - 5,
+          tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+          tiltAngle: 0
+        });
+      }
+
+      if (confettiInterval) clearInterval(confettiInterval);
+      confettiInterval = setInterval(drawConfetti, 20);
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      confetti.forEach((p, idx) => {
+        p.tiltAngle += p.tiltAngleIncremental;
+        p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+        p.tilt = Math.sin(p.tiltAngle - idx/3) * 15;
+
+        if (p.y > canvas.height) {
+          // Recycle confetti piece
+          confetti[idx] = {
+            x: Math.random() * canvas.width,
+            y: -20,
+            r: p.r,
+            d: p.d,
+            color: p.color,
+            tilt: p.tilt,
+            tiltAngleIncremental: p.tiltAngleIncremental,
+            tiltAngle: p.tiltAngle
           };
         }
-        window.speechSynthesis.speak(utterance);
-      } else {
-        // 브라우저 미지원 시 딜레이 폴백
-        if (onEndCallback) {
-          setTimeout(onEndCallback, 1500);
-        }
-      }
-    };
 
-    // 꽃가루 연출 효과
-    const triggerConfetti = () => {
-      const colors = ['#FDA4AF', '#FCD34D', '#86EFAC', '#93C5FD', '#C084FC', '#F472B6'];
-      const container = document.getElementById('confetti-container');
-      for (let i = 0; i < 35; i++) {
-        const confetti = document.createElement('div');
-        confetti.classList.add('confetti');
-        confetti.style.left = Math.random() * 100 + 'vw';
-        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.animationDuration = (Math.random() * 2 + 1.2) + 's';
-        confetti.style.top = '-10px';
-        container.appendChild(confetti);
-        
-        setTimeout(() => { confetti.remove(); }, 3000);
-      }
-    };
-
-    const addScore = (amount) => {
-      globalScore += amount;
-      document.getElementById('global-score').textContent = globalScore;
-    };
-
-    // --- 화면 이동 제어 ---
-    const showScreen = (screenId) => {
-      const screens = ['screen-home', 'screen-tree', 'screen-cards', 'screen-story', 'screen-end'];
-      screens.forEach(id => {
-        const el = document.getElementById(id);
-        if (id === screenId) {
-          el.classList.remove('hidden');
-        } else {
-          el.classList.add('hidden');
-        }
+        ctx.beginPath();
+        ctx.lineWidth = p.r;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+        ctx.stroke();
       });
-    };
+    }
 
-    const goHome = () => {
-      if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
-      currentMode = 'home';
-      showScreen('screen-home');
-    };
-
-    const finishGame = () => {
-      playSound('complete');
-      triggerConfetti();
-      document.getElementById('end-score').textContent = globalScore;
-      showScreen('screen-end');
-    };
-
-    // --- STREAMING_CHUNK: Initializing Tree Game (Game 1) logic ---
-    // --- [놀이 1] 다정한 말 열매 나무 (다정한말 3, 나쁜말 3) ---
-    const fruitData = [
-      { id: 1, text: "사랑해", isKind: true, emoji: "❤️" },
-      { id: 2, text: "고마워", isKind: true, emoji: "🍊" },
-      { id: 3, text: "괜찮아", isKind: true, emoji: "🍒" },
-      { id: 4, text: "저리가!", isKind: false, emoji: "🐛" },
-      { id: 5, text: "바보야", isKind: false, emoji: "🧱" },
-      { id: 6, text: "메롱", isKind: false, emoji: "👾" }
-    ];
-
-    let remainingKindFruits = 0;
-
-    const initTreeGame = () => {
-      const container = document.getElementById('fruit-container');
-      const guide = document.getElementById('tree-guide');
-      container.innerHTML = '';
-      guide.textContent = "다정한 말을 골라주세요! 소리가 나요!";
-      
-      remainingKindFruits = fruitData.filter(f => f.isKind).length;
-      document.getElementById('tree-target').textContent = remainingKindFruits;
-
-      // 6개 열매를 겹치지 않게 나무 상단에 배치
-      const positions = [
-        { x: 35, y: 30 }, { x: 130, y: 20 }, { x: 220, y: 35 },
-        { x: 80, y: 100 }, { x: 180, y: 90 }, { x: 120, y: 165 }
-      ];
-
-      const shuffledPositions = [...positions].sort(() => Math.random() - 0.5);
-
-      fruitData.forEach((fruit, idx) => {
-        const fruitEl = document.createElement('button');
-        const pos = shuffledPositions[idx] || { x: 100, y: 100 };
-        
-        fruitEl.className = "absolute game-btn text-sm font-bold bg-white/95 px-3.5 py-2 rounded-2xl shadow-md border-2 border-emerald-300 flex items-center gap-1 z-20 cursor-pointer";
-        fruitEl.style.left = `${pos.x}px`;
-        fruitEl.style.top = `${pos.y}px`;
-        fruitEl.innerHTML = `<span class="text-lg">${fruit.emoji}</span> <span class="text-slate-800 font-extrabold text-xs">${fruit.text}</span>`;
-        
-        fruitEl.onclick = () => handleFruitTap(fruit, fruitEl);
-        container.appendChild(fruitEl);
-      });
-    };
-
-    const handleFruitTap = (fruit, element) => {
-      if (element.disabled) return;
-
-      if (fruit.isKind) {
-        element.disabled = true;
-        element.classList.remove('bg-white/95', 'border-emerald-300');
-        element.classList.add('bg-pink-100', 'border-pink-300', 'opacity-60', 'scale-90');
-        element.innerHTML = `💖 <span class="text-xs">${fruit.text}</span>`;
-        
-        playSound('success');
-        
-        addScore(10);
-        remainingKindFruits--;
-        document.getElementById('tree-target').textContent = remainingKindFruits;
-
-        const guide = document.getElementById('tree-guide');
-        guide.textContent = `💖 "${fruit.text}"! 참 좋은 말이에요!`;
-
-        // TTS 낭독이 끝난 후에만 알림 팝업이 노출되도록 제어
-        speakWord(fruit.text, () => {
-          if (remainingKindFruits === 0) {
-            setTimeout(() => {
-              alertModal("🌳 나무가 튼튼해졌어요!", "모든 예쁜 열매를 바구니에 담았어요!", () => {
-                finishGame();
-              });
-            }, 300);
-          }
-        });
-      } else {
-        // 나쁜 말 클릭 시 흔들림 애니메이션 효과 및 피드백 제공
-        element.classList.add('animate-shake', 'bg-rose-50', 'border-rose-400');
-        playSound('fail');
-        
-        const guide = document.getElementById('tree-guide');
-        guide.textContent = `😢 "${fruit.text}"은 친구의 마음을 시무룩하게 만들어요.`;
-        
-        speakWord(fruit.text, () => {
-          setTimeout(() => {
-            element.classList.remove('animate-shake', 'bg-rose-50', 'border-rose-400');
-          }, 300);
-        });
+    // Window size listener for canvas responsive scaling
+    window.addEventListener('resize', () => {
+      if (currentStep === 'receipt') {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
       }
-    };
+    });
 
-    // --- STREAMING_CHUNK: Initializing Card Game (Game 2) logic ---
-    // --- [놀이 2] 다정한 카드 맞추기 (동일 카드 2장씩 매칭) ---
-    const cardSvgAssets = {
-      thankYou: `
-        <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
-          <circle cx="50" cy="50" r="45" fill="#ECFDF5" stroke="#34D399" stroke-width="2"/>
-          <path d="M 25 55 Q 35 40 50 45 Q 65 50 75 40" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
-          <path d="M 25 45 Q 35 60 50 50 Q 65 40 75 50" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
-          <path d="M 50 20 C 50 20 48 16 45 16 C 42 16 40 19 43 22 L 50 28 L 57 22 C 60 19 58 16 55 16 C 52 16 50 20 50 20 Z" fill="#FBBF24"/>
-        </svg>
-      `,
-      love: `
-        <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
-          <circle cx="50" cy="50" r="45" fill="#FFF1F2" stroke="#FDA4AF" stroke-width="2"/>
-          <path d="M 50 32 C 50 32 44 20 34 20 C 24 20 18 28 26 42 L 50 72 L 74 42 C 82 28 76 20 66 20 C 56 20 50 32 50 32 Z" fill="#F43F5E"/>
-        </svg>
-      `,
-      gwenchana: `
-        <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
-          <circle cx="50" cy="50" r="45" fill="#EFF6FF" stroke="#93C5FD" stroke-width="2"/>
-          <rect x="25" y="42" width="50" height="16" rx="4" fill="#FDBA74" stroke="#D97706" stroke-width="1.5" transform="rotate(30 50 50)"/>
-          <rect x="25" y="42" width="50" height="16" rx="4" fill="#FDBA74" stroke="#D97706" stroke-width="1.5" transform="rotate(-30 50 50)"/>
-          <circle cx="50" cy="50" r="1.5" fill="#B45309"/>
-          <circle cx="45" cy="47" r="1.5" fill="#B45309"/>
-          <circle cx="55" cy="53" r="1.5" fill="#B45309"/>
-          <circle cx="45" cy="53" r="1.5" fill="#B45309"/>
-          <circle cx="55" cy="47" r="1.5" fill="#B45309"/>
-        </svg>
-      `,
-      youAreBest: `
-        <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
-          <circle cx="50" cy="50" r="45" fill="#FEF3C7" stroke="#FBBF24" stroke-width="2"/>
-          <circle cx="50" cy="44" r="18" fill="#FBBF24" stroke="#D97706" stroke-width="2"/>
-          <path d="M 42 70 L 35 85 L 50 78 L 65 85 L 58 70 Z" fill="#EF4444" stroke="#B91C1C" stroke-width="1.5"/>
-          <circle cx="50" cy="44" r="12" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
-          <path d="M 49 38 L 51 42 L 56 42 L 52 45 L 54 49 L 49 46 L 44 49 L 46 45 L 42 42 L 47 42 Z" fill="#F59E0B"/>
-        </svg>
-      `
-    };
+    // Clock auto-update
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? '오후' : '오전';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // convert '0' to '12'
+      document.getElementById('clock').textContent = `${ampm} ${hours}:${minutes}`;
+    }
+    
+    setInterval(updateClock, 1000);
+    updateClock();
 
-    const cardDataRaw = [
-      { key: "thankYou", text: "고마워", svg: cardSvgAssets.thankYou },
-      { key: "love", text: "사랑해", svg: cardSvgAssets.love },
-      { key: "gwenchana", text: "괜찮아", svg: cardSvgAssets.gwenchana },
-      { key: "youAreBest", text: "넌 최고야", svg: cardSvgAssets.youAreBest }
-    ];
-
-    let selectedCards = [];
-    let matchedCount = 0;
-    let cardsDeck = [];
-
-    const initCardGame = () => {
-      const grid = document.getElementById('card-grid');
-      const guide = document.getElementById('card-guide');
-      grid.innerHTML = '';
-      guide.textContent = "카드 두 장을 차례대로 골라 똑같은 짝을 맞춰보세요!";
-      selectedCards = [];
-      matchedCount = 0;
-      document.getElementById('card-matches').textContent = 0;
-
-      const deck = [];
-      cardDataRaw.forEach((item, index) => {
-        deck.push({ id: `${index}-a`, text: item.text, value: index, svg: item.svg });
-        deck.push({ id: `${index}-b`, text: item.text, value: index, svg: item.svg });
-      });
-
-      cardsDeck = deck.sort(() => Math.random() - 0.5);
-
-      cardsDeck.forEach((card, index) => {
-        const cardBox = document.createElement('div');
-        cardBox.className = "relative h-28 cursor-pointer game-btn card-container";
-        cardBox.dataset.index = index;
-
-        cardBox.innerHTML = `
-          <div class="card-inner w-full h-full relative">
-            <div class="card-front w-full h-full flex items-center justify-center">
-              <span class="text-2xl text-yellow-300 font-extrabold">✨</span>
-            </div>
-            <div class="card-back w-full h-full flex flex-col items-center justify-center p-2 border-2 border-sky-300 bg-white rounded-2xl">
-              <div class="w-12 h-12 flex items-center justify-center mb-1">${card.svg}</div>
-              <span class="text-sm font-black text-slate-800 tracking-tight">${card.text}</span>
-            </div>
-          </div>
-        `;
-
-        cardBox.onclick = () => selectCard(index, cardBox);
-        grid.appendChild(cardBox);
-      });
-    };
-
-    const selectCard = (index, element) => {
-      if (element.classList.contains('card-flipped') || element.classList.contains('matched') || selectedCards.length >= 2) {
-        return;
-      }
-
-      element.classList.add('card-flipped');
-      selectedCards.push({ index, element, data: cardsDeck[index] });
-
-      // 카드 선택 시 한국어 낭독 수행
-      speakWord(cardsDeck[index].text, () => {
-        if (selectedCards.length === 2) {
-          checkCardMatch();
-        }
-      });
-    };
-
-    const checkCardMatch = () => {
-      const [card1, card2] = selectedCards;
-
-      if (card1.data.value === card2.data.value) {
-        card1.element.classList.add('matched');
-        card2.element.classList.add('matched');
-        
-        matchedCount++;
-        document.getElementById('card-matches').textContent = matchedCount;
-        addScore(15);
-        
-        const guide = document.getElementById('card-guide');
-        guide.textContent = `✨ 똑같아요! 다 함께 큰 소리로 "${cardDataRaw[card1.data.value].text}"!`;
-
-        playSound('success');
-        selectedCards = [];
-
-        if (matchedCount === 4) {
-          // 글자를 모두 다 낭독한 이후에 성공 안내 축하 모달이 팝업되도록 이벤트 콜백 연결
-          speakWord(cardDataRaw[card1.data.value].text, () => {
-            setTimeout(() => {
-              alertModal("🃏 기억력이 너무 훌륭해요!", "모든 똑같은 다정한 말 카드의 짝을 찾았어요!", () => {
-                finishGame();
-              });
-            }, 300);
-          });
-        }
-      } else {
-        const guide = document.getElementById('card-guide');
-        guide.textContent = `앗, 다른 카드예요! 천천히 다시 골라봐요.`;
-        playSound('fail');
-
-        setTimeout(() => {
-          card1.element.classList.remove('card-flipped');
-          card2.element.classList.remove('card-flipped');
-          selectedCards = [];
-        }, 1000);
-      }
-    };
-
-    // --- STREAMING_CHUNK: Initializing Story Game (Game 3) logic ---
-    // --- [놀이 3] 토닥토닥 상황극 (아동용 단축형 핵심 문장과 정교한 설명 최적화) ---
-    const storyData = [
-      {
-        id: 1,
-        illustration: `
-          <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none">
-            <circle cx="50" cy="50" r="45" fill="#FAF5FF" stroke="#D8B4FE" stroke-width="2"/>
-            <rect x="25" y="70" width="16" height="12" rx="2" fill="#F43F5E" stroke="#BE123C" stroke-width="1.5"/>
-            <rect x="44" y="74" width="20" height="10" rx="2" fill="#3B82F6" stroke="#1D4ED8" stroke-width="1.5" transform="rotate(15 44 74)"/>
-            <rect x="68" y="66" width="14" height="14" rx="2" fill="#10B981" stroke="#047857" stroke-width="1.5" transform="rotate(-25 68 66)"/>
-            <polygon points="46,42 54,54 38,54" fill="#FBBF24" stroke="#D97706" stroke-width="1.5" transform="rotate(45 50 48)"/>
-            <circle cx="38" cy="40" r="2" fill="#5B21B6"/>
-            <circle cx="62" cy="40" r="2" fill="#5B21B6"/>
-            <path d="M 44 48 Q 50 54 56 48" stroke="#5B21B6" stroke-width="2" stroke-linecap="round" fill="none"/>
-          </svg>
-        `,
-        text: "마음이의 블록 탑이 와르르 무너져 속상해하고 있어요.",
-        choices: {
-          A: { text: "바보야, 그것도 못 하니?", isCorrect: false },
-          B: { text: "정말 속상하겠다. 같이 다시 쌓자!", isCorrect: true }
-        },
-        explain: "친구 슬픈 마음에 깊이 공감하고 함께 도와주면, 속상했던 마음이 눈 녹듯 사르르 풀려요!"
-      },
-      {
-        id: 2,
-        illustration: `
-          <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none">
-            <circle cx="50" cy="50" r="45" fill="#FFF5F5" stroke="#FECACA" stroke-width="2"/>
-            <circle cx="50" cy="52" r="24" fill="#FFE4E6"/>
-            <circle cx="42" cy="48" r="2.5" fill="#BE123C"/>
-            <circle cx="58" cy="48" r="2.5" fill="#BE123C"/>
-            <path d="M 44 60 Q 50 52 56 60" stroke="#BE123C" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-            <circle cx="36" cy="55" r="3" fill="#FDA4AF"/>
-            <circle cx="64" cy="55" r="3" fill="#FDA4AF"/>
-            <path d="M 38 52 L 38 64 M 62 52 L 62 64" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        `,
-        text: "기쁨이가 달리기를 하다가 넘어져 아파하고 있어요.",
-        choices: {
-          A: { text: "괜찮아? 많이 아프지? 내가 잡아줄게", isCorrect: true },
-          B: { text: "달리기도 제대로 못 한대요!", isCorrect: false }
-        },
-        explain: "놀리고 핀잔을 주는 대신 다쳐서 아픈 마음을 감싸주고 따뜻하게 걱정하는 태도가 최고예요!"
-      },
-      {
-        id: 3,
-        illustration: `
-          <svg class="w-32 h-32" viewBox="0 0 100 100" fill="none">
-            <circle cx="50" cy="50" r="45" fill="#FEF3C7" stroke="#FDE68A" stroke-width="2"/>
-            <circle cx="50" cy="55" r="20" fill="#D97706"/>
-            <circle cx="36" cy="38" r="7" fill="#B45309"/>
-            <circle cx="64" cy="38" r="7" fill="#B45309"/>
-            <ellipse cx="50" cy="62" rx="7" ry="5" fill="#FDE68A"/>
-            <polygon points="48,59 52,59 50,61" fill="#78350F"/>
-            <path d="M 47 64 Q 50 67 53 64" stroke="#78350F" stroke-width="1.5" fill="none"/>
-            <circle cx="43" cy="50" r="2" fill="#000"/>
-            <circle cx="57" cy="50" r="2" fill="#000"/>
-            <path d="M 50 22 C 50 22 47 16 43 16 C 39 16 36 20 40 25 L 50 34 L 60 25 C 64 20 61 16 57 16 C 53 16 50 22 50 22 Z" fill="#EC4899" class="pulse-effect"/>
-          </svg>
-        `,
-        text: "사랑이가 안고 있는 귀여운 곰 인형을 나도 안아보고 싶어요.",
-        choices: {
-          A: { text: "그거 이리 내놔! 나 먼저 만질 거야!", isCorrect: false },
-          B: { text: "인형 정말 예쁘다, 나도 빌려줄 수 있어?", isCorrect: true }
-        },
-        explain: "강제로 빼앗지 않고, 소유를 존중하며 다정히 물어보고 차례를 지켜 나눠 노는 모습이 멋져요!"
-      }
-    ];
-
-    let currentStoryIdx = 0;
-
-    const initStoryGame = () => {
-      currentStoryIdx = 0;
-      showStoryQuestion();
-    };
-
-    const showStoryQuestion = () => {
-      const data = storyData[currentStoryIdx];
-      document.getElementById('story-progress').textContent = currentStoryIdx + 1;
-      
-      document.getElementById('story-illustration').innerHTML = data.illustration;
-      document.getElementById('story-text').textContent = data.text;
-      
-      document.getElementById('story-choice-a-text').textContent = data.choices.A.text;
-      document.getElementById('story-choice-b-text').textContent = data.choices.B.text;
-
-      resetChoiceStyles();
-      document.getElementById('story-guide').textContent = "친구가 기분이 살며시 좋아지는 말을 골라볼까요?";
-    };
-
-    const resetChoiceStyles = () => {
-      const btnA = document.getElementById('story-choice-a');
-      const btnB = document.getElementById('story-choice-b');
-      btnA.className = "game-btn w-full bg-white hover:bg-violet-50 text-slate-700 text-base font-bold py-3.5 px-4 rounded-2xl border-2 border-violet-200 hover:border-violet-300 custom-shadow flex items-center gap-2";
-      btnB.className = "game-btn w-full bg-white hover:bg-violet-50 text-slate-700 text-base font-bold py-3.5 px-4 rounded-2xl border-2 border-violet-200 hover:border-violet-300 custom-shadow flex items-center gap-2";
-    };
-
-    // --- STREAMING_CHUNK: Handling Answer Selection and Event Dispatching... ---
-    // 목소리 낭독이 '완전히 끝난 뒤' 팝업을 노출시키는 중추 핸들러
-    const chooseStoryAnswer = (choiceKey) => {
-      const data = storyData[currentStoryIdx];
-      const isCorrect = data.choices[choiceKey].isCorrect;
-      const clickedBtn = choiceKey === 'A' ? document.getElementById('story-choice-a') : document.getElementById('story-choice-b');
-
-      if (isCorrect) {
-        clickedBtn.classList.remove('border-violet-200', 'bg-white');
-        clickedBtn.classList.add('border-emerald-400', 'bg-emerald-50', 'text-emerald-800');
-        
-        playSound('success');
-        addScore(20);
-        
-        document.getElementById('story-guide').textContent = "우와! 정말 듣기만 해도 행복해지는 답이었어요! 👍";
-
-        // 중요: 정답 다정어 음성 재생이 완벽히 끝난 직후 팝업이 노출되도록 onEndCallback 탑재!
-        speakWord(data.choices[choiceKey].text, () => {
-          setTimeout(() => {
-            alertModal("💬 따뜻한 우리들!", data.explain, () => {
-              currentStoryIdx++;
-              if (currentStoryIdx < storyData.length) {
-                showStoryQuestion();
-              } else {
-                finishGame();
-              }
-            });
-          }, 300); // 낭독 끝난 후 자연스러운 0.3초 여백 뒤 팝업 등장
-        });
-
-      } else {
-        clickedBtn.classList.remove('border-violet-200', 'bg-white');
-        clickedBtn.classList.add('border-rose-400', 'bg-rose-50', 'text-rose-800', 'animate-shake');
-        
-        playSound('fail');
-        document.getElementById('story-guide').textContent = "앗! 그 대답은 친구의 마음을 속상하게 해요. 다른 대답을 찾아볼까요?";
-        
-        // 오답 선택 시에도 피드백 목소리를 명확하게 들려줍니다.
-        speakWord(data.choices[choiceKey].text, () => {
-          setTimeout(() => {
-            clickedBtn.classList.remove('animate-shake');
-          }, 500);
-        });
-      }
-    };
-
-    // --- 유치원용 예쁜 모달 팝업 레이어 (alert 대체 수단) ---
-    const alertModal = (title, message, callback) => {
-      const modal = document.createElement('div');
-      modal.className = "fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6";
-      modal.innerHTML = `
-        <div class="bg-white rounded-[28px] border-8 border-emerald-200 p-6 max-w-sm w-full flex flex-col items-center text-center custom-shadow gap-4">
-          <span class="text-4xl text-pink-500">🌸</span>
-          <h4 class="text-xl font-black text-emerald-800">${title}</h4>
-          <p class="text-sm text-slate-600 font-bold leading-relaxed">${message}</p>
-          <button id="modal-ok-btn" class="game-btn w-full bg-emerald-500 hover:bg-emerald-600 text-white text-base font-bold py-3 px-5 rounded-xl border-b-4 border-emerald-700 custom-shadow">
-            참 잘했어요! 다음으로
-          </button>
-        </div>
-      `;
-      document.body.appendChild(modal);
-
-      document.getElementById('modal-ok-btn').onclick = () => {
-        playSound('success');
-        modal.remove();
-        if (callback) callback();
-      };
-    };
-
-    // --- 게임 실행 진입 게이트웨이 ---
-    const startGame = (mode) => {
-      playSound('success');
-      currentMode = mode;
-      
-      if (mode === 'tree') {
-        showScreen('screen-tree');
-        initTreeGame();
-      } else if (mode === 'cards') {
-        showScreen('screen-cards');
-        initCardGame();
-      } else if (mode === 'story') {
-        showScreen('screen-story');
-        initStoryGame();
-      }
-    };
-
+    // Trigger initial welcoming audio/state after load
     window.onload = () => {
-      console.log("반짝반짝 다정한 말 놀이터에 오신 것을 환영합니다.");
+      // Just set up, we'll prompt TTS on screen trigger
+      changeScreen('welcome');
     };
   </script>
 </body>

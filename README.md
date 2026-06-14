@@ -1,0 +1,966 @@
+[index.html](https://github.com/user-attachments/files/28921998/index.html)
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다정한 빵집 미니 오락실</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nanum Gothic', sans-serif;
+            background-color: #fdf6ec;
+        }
+        .font-cozy {
+            font-family: 'Gaegu', cursive, sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fdf6ec;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e6c594;
+            border-radius: 4px;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake-anim {
+            animation: shake 0.5s;
+        }
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .bounce-slow {
+            animation: bounce-slow 2s infinite ease-in-out;
+        }
+        .letter-tile {
+            box-shadow: 0 4px 0px #b45309;
+            transition: all 0.1s ease;
+        }
+        .letter-tile:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0px #b45309;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 md:p-6 text-amber-950 overflow-x-hidden select-none">
+
+    <header class="w-full max-w-lg text-center my-2">
+        <h1 class="text-4xl font-cozy font-bold text-amber-800 tracking-wider flex items-center justify-center gap-2">
+            🍞 다정한 빵집 오락실 ✨
+        </h1>
+        <p class="text-xs text-amber-700 mt-1">그림책 읽기 후 다정한 미션 4가지를 완수해보세요!</p>
+    </header>
+
+    <main class="w-full max-w-lg bg-white rounded-3xl shadow-xl border-4 border-amber-200 p-4 relative flex-grow flex flex-col justify-between min-h-[690px]">
+        
+        <!-- SCREEN 1: HUB -->
+        <div id="screen-hub" class="flex flex-col justify-between flex-grow">
+            <div class="text-center my-3">
+                <div class="relative inline-block">
+                    <span class="text-7xl bounce-slow block">🍞</span>
+                    <span class="absolute -top-1 -right-1 text-2xl">💖</span>
+                </div>
+                <h2 class="text-2xl font-cozy font-bold mt-2 text-amber-900">어떤 다정한 도전을 시작할까요?</h2>
+                <p class="text-xs text-gray-500 px-4 mt-1">마음과 태도를 길러주는 4가지 독후 활동!</p>
+            </div>
+
+            <div class="space-y-3 px-1">
+                <button onclick="switchScreen('game1')" class="w-full text-left bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 p-3.5 rounded-2xl flex items-center gap-4">
+                    <div class="bg-amber-500 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl">🧺</div>
+                    <div class="flex-grow">
+                        <span class="bg-amber-200 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">1단계</span>
+                        <h3 class="font-bold text-base text-amber-900 mt-0.5">다정한 빵 바구니 받기</h3>
+                        <p class="text-xs text-amber-700">하늘에서 천천히 내리는 다정한 빵만 쏙쏙!</p>
+                    </div>
+                </button>
+
+                <button onclick="switchScreen('game2')" class="w-full text-left bg-gradient-to-r from-amber-50 to-pink-50 border-2 border-amber-200 p-3.5 rounded-2xl flex items-center gap-4">
+                    <div class="bg-rose-500 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl">🧩</div>
+                    <div class="flex-grow">
+                        <span class="bg-rose-200 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded-full">2단계</span>
+                        <h3 class="font-bold text-base text-amber-900 mt-0.5">다정한 말 완성하기</h3>
+                        <p class="text-xs text-amber-700">따뜻한 고백을 자모음으로 완성해요!</p>
+                    </div>
+                </button>
+
+                <button onclick="switchScreen('game3')" class="w-full text-left bg-gradient-to-r from-amber-50 to-emerald-50 border-2 border-amber-200 p-3.5 rounded-2xl flex items-center gap-4">
+                    <div class="bg-emerald-500 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl">🏫</div>
+                    <div class="flex-grow">
+                        <span class="bg-emerald-200 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">3단계</span>
+                        <h3 class="font-bold text-base text-amber-900 mt-0.5">공공장소 바른 행동 찾기</h3>
+                        <p class="text-xs text-amber-700">이웃을 배려하는 상냥한 태도 배우기</p>
+                    </div>
+                </button>
+
+                <button onclick="switchScreen('game4')" class="w-full text-left bg-gradient-to-r from-amber-50 to-indigo-50 border-2 border-amber-200 p-3.5 rounded-2xl flex items-center gap-4">
+                    <div class="bg-indigo-500 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl">🗺️</div>
+                    <div class="flex-grow">
+                        <span class="bg-indigo-200 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full">4단계</span>
+                        <h3 class="font-bold text-base text-amber-900 mt-0.5">다정한 미로 찾기</h3>
+                        <p class="text-xs text-amber-700">재료를 모아 다정한 오븐을 완성해요!</p>
+                    </div>
+                </button>
+            </div>
+
+            <div class="text-center mt-5 py-2.5 bg-amber-50 rounded-xl border border-amber-100 mx-1">
+                <p class="text-[11px] text-amber-800 font-semibold">🔑 모든 성공 시 <b>무지개 조리법</b> 획득!</p>
+                <div class="flex flex-wrap justify-center gap-2 mt-1.5">
+                    <span class="text-[10px] opacity-40" id="status-key-1">🔑 1단</span>
+                    <span class="text-[10px] opacity-40" id="status-key-2">🔑 2단</span>
+                    <span class="text-[10px] opacity-40" id="status-key-3">🔑 3단</span>
+                    <span class="text-[10px] opacity-40" id="status-key-4">🔑 4단</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: GAME 1 -->
+        <div id="screen-game1" class="hidden flex-col justify-between flex-grow">
+            <div class="flex justify-between items-center pb-2 border-b border-amber-100">
+                <button onclick="switchScreen('hub')" class="text-amber-700 text-sm font-bold">🏠 홈</button>
+                <div class="flex gap-4">
+                    <span class="text-xs font-bold text-rose-600">❤️ <span id="g1-lives">3</span></span>
+                    <span class="text-xs font-bold text-amber-800">점수: <span id="g1-score">0</span> / 150</span>
+                </div>
+            </div>
+            <div class="flex-grow relative my-2 overflow-hidden bg-gradient-to-b from-sky-50 to-amber-50/20 rounded-2xl border-2 border-amber-200 h-[450px]">
+                <canvas id="g1-canvas" class="w-full h-full block"></canvas>
+                <div id="g1-overlay" class="absolute inset-0 bg-amber-950/80 flex flex-col items-center justify-center text-white p-4 text-center">
+                    <h4 class="text-2xl font-bold font-cozy text-amber-200 mb-2">1단계: 다정한 빵 받기</h4>
+                    <p class="text-xs mb-4">따뜻한 빵(🍞)은 담고, 차가운 말(💔)은 피해요!<br>목표: 150점</p>
+                    <button onclick="startGame1()" class="px-6 py-2 bg-amber-500 text-white font-bold rounded-xl shadow-md">시작</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <button id="g1-left-btn" class="py-4 bg-amber-100 active:bg-amber-200 rounded-xl font-bold text-lg select-none">◀ 왼쪽</button>
+                <button id="g1-right-btn" class="py-4 bg-amber-100 active:bg-amber-200 rounded-xl font-bold text-lg select-none">오른쪽 ▶</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: GAME 2 -->
+        <div id="screen-game2" class="hidden flex-col justify-between flex-grow">
+            <div class="flex justify-between items-center pb-2 border-b border-amber-100">
+                <button onclick="switchScreen('hub')" class="text-amber-700 text-sm font-bold">🏠 홈</button>
+                <span class="text-xs font-bold text-amber-800">스테이지: <span id="g2-stage-txt">1 / 5</span></span>
+            </div>
+            <div class="flex-grow flex flex-col justify-between py-3">
+                <div class="text-center">
+                    <h4 class="text-lg font-bold text-amber-900 font-cozy">다정한 말을 완성해보세요!</h4>
+                    <p class="text-xs text-amber-700 mt-1" id="g2-meaning">설명</p>
+                </div>
+                <div class="flex justify-center gap-2 my-6" id="g2-target-word-container"></div>
+                <div class="bg-amber-50/50 p-4 rounded-2xl border-2 border-amber-200/50">
+                    <div class="flex flex-wrap justify-center gap-3" id="g2-pool-container"></div>
+                </div>
+                <button onclick="resetGame2Stage()" class="mt-4 py-2 bg-gray-200 rounded-xl text-xs font-bold">다시하기</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: GAME 3 -->
+        <div id="screen-game3" class="hidden flex-col justify-between flex-grow">
+            <div class="flex justify-between items-center pb-2 border-b border-amber-100">
+                <button onclick="switchScreen('hub')" class="text-amber-700 text-sm font-bold">🏠 홈</button>
+                <span class="text-xs font-bold text-emerald-800">질문: <span id="g3-stage-txt">1 / 4</span></span>
+            </div>
+            <div class="flex-grow flex flex-col justify-around py-3">
+                <div class="text-center">
+                    <span class="text-4xl" id="g3-location-emoji">📚</span>
+                    <h4 class="text-lg font-bold text-amber-900 mt-1" id="g3-location-title">장소</h4>
+                </div>
+                <div class="bg-emerald-50 rounded-2xl border-2 border-emerald-200 p-4 text-center my-2">
+                    <p class="text-sm font-bold text-emerald-900" id="g3-scenario-desc">상황</p>
+                </div>
+                <div class="space-y-3" id="g3-options-container">
+                    <button onclick="chooseG3Option(0)" id="g3-btn-0" class="w-full p-4 bg-white border-2 border-amber-200 rounded-xl text-left flex items-center gap-3">
+                        <span class="text-2xl" id="g3-icon-0">💬</span>
+                        <p class="text-sm font-bold" id="g3-text-0">보기 A</p>
+                    </button>
+                    <button onclick="chooseG3Option(1)" id="g3-btn-1" class="w-full p-4 bg-white border-2 border-amber-200 rounded-xl text-left flex items-center gap-3">
+                        <span class="text-2xl" id="g3-icon-1">📣</span>
+                        <p class="text-sm font-bold" id="g3-text-1">보기 B</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 5: GAME 4 (MAZE) -->
+        <div id="screen-game4" class="hidden flex-col justify-between flex-grow">
+            <div class="flex justify-between items-center pb-2 border-b border-amber-100">
+                <button onclick="switchScreen('hub')" class="text-amber-700 text-sm font-bold">🏠 홈</button>
+                <div class="flex gap-3 text-xs font-bold text-indigo-800">
+                    <span>미로: <span id="g4-stage-txt">1 / 3</span></span>
+                    <span>재료: <span id="g4-items-count">0</span> / 3</span>
+                </div>
+            </div>
+            <div class="flex-grow flex flex-col justify-between py-2">
+                <div class="flex justify-around items-center bg-indigo-50 border border-indigo-200 rounded-xl p-2 mb-2">
+                    <div class="flex items-center gap-1.5 text-xs font-bold">
+                        <span id="g4-badge-fire" class="opacity-30 transition-opacity">🔥 불씨</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-xs font-bold">
+                        <span id="g4-badge-sugar" class="opacity-30 transition-opacity">🍯 설탕</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-xs font-bold">
+                        <span id="g4-badge-cherry" class="opacity-30 transition-opacity">🍒 체리</span>
+                    </div>
+                    <div class="text-[10px] text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full font-bold">
+                        오븐 상태: <span id="g4-oven-status">잠김</span>
+                    </div>
+                </div>
+
+                <!-- 캔버스 미로 판 -->
+                <div class="relative flex justify-center bg-gray-100 p-2 rounded-2xl border-2 border-indigo-200 overflow-hidden">
+                    <canvas id="g4-canvas" width="320" height="320" class="bg-white rounded-lg block"></canvas>
+                    <div id="g4-overlay" class="absolute inset-0 bg-indigo-950/80 flex flex-col items-center justify-center text-white p-4 text-center">
+                        <h4 class="text-2xl font-bold font-cozy text-indigo-200 mb-1">4단계: 다정한 미로 찾기</h4>
+                        <p class="text-xs mb-3 text-yellow-100">※ 도착지 안전 공간 보장! 세균이 끝방까지 들어오지 못해요!</p>
+                        <p class="text-[11px] mb-3">식빵이가 되어 미로 속 세 개의 재료(🔥,🍯,🍒)를 먼저 모으고 '도착(다정한 빵집)'으로 골인해요!</p>
+                        <button onclick="startGame4()" class="px-5 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl shadow-md text-xs">탐험 시작</button>
+                    </div>
+                </div>
+
+                <!-- 안내 가이드 레전드 -->
+                <div class="grid grid-cols-2 gap-2 bg-amber-50/60 rounded-xl p-2 text-[11px] border border-amber-200/50 mt-1">
+                    <div class="flex items-center gap-1 font-bold text-emerald-800">
+                        <span class="bg-emerald-100 px-1 rounded border border-emerald-300">🍃 대피소</span>
+                        <span>먼지를 피해 숨는 칸이에요!</span>
+                    </div>
+                    <div class="flex items-center gap-1 font-bold text-purple-800">
+                        <span class="bg-purple-100 px-1 rounded border border-purple-300">░░ 이동선</span>
+                        <span>먼지 괴물이 걷는 길이에요!</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-center mt-2 pb-2">
+                    <div class="grid grid-cols-3 gap-2 w-48">
+                        <div></div>
+                        <!-- UP BUTTON -->
+                        <button id="g4-up" class="w-14 h-14 bg-indigo-100 hover:bg-indigo-200 active:bg-indigo-300 border-2 border-indigo-500 rounded-2xl flex items-center justify-center text-indigo-900 shadow-md">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                            </svg>
+                        </button>
+                        <div></div>
+                        
+                        <!-- LEFT BUTTON -->
+                        <button id="g4-left" class="w-14 h-14 bg-indigo-100 hover:bg-indigo-200 active:bg-indigo-300 border-2 border-indigo-500 rounded-2xl flex items-center justify-center text-indigo-900 shadow-md">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                            </svg>
+                        </button>
+                        <div class="flex items-center justify-center text-xs text-indigo-500 font-bold font-cozy">조작</div>
+                        
+                        <!-- RIGHT BUTTON -->
+                        <button id="g4-right" class="w-14 h-14 bg-indigo-100 hover:bg-indigo-200 active:bg-indigo-300 border-2 border-indigo-500 rounded-2xl flex items-center justify-center text-indigo-900 shadow-md">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </button>
+                        <div></div>
+                        
+                        <!-- DOWN BUTTON -->
+                        <button id="g4-down" class="w-14 h-14 bg-indigo-100 hover:bg-indigo-200 active:bg-indigo-300 border-2 border-indigo-500 rounded-2xl flex items-center justify-center text-indigo-900 shadow-md">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 6: VICTORY -->
+        <div id="screen-victory" class="hidden flex-col justify-between flex-grow">
+            <div class="text-center my-4 flex-grow flex flex-col justify-center items-center">
+                <span class="text-7xl mb-2 bounce-slow">✨🌈✨</span>
+                <h2 class="text-2xl font-cozy font-bold text-amber-800">다정한 무지개 조리법 획득!</h2>
+                <div class="bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-4 my-4">
+                    <h3 class="text-center font-bold mb-2 text-amber-900 border-b border-amber-200 pb-1">행복을 굽는 약속</h3>
+                    <ul class="text-xs space-y-2 text-left font-cozy text-base">
+                        <li>💌 <b>다정한 말:</b> "고마워", "사랑해" 전하기</li>
+                        <li>🤝 <b>배려의 마음:</b> 따뜻한 마음만 바구니에 담기</li>
+                        <li>🚌 <b>함께하는 예절:</b> 이웃을 아끼는 행동하기</li>
+                        <li>🏬 <b>따뜻한 동행:</b> 미로 속 상냥한 재료 가득 구하기</li>
+                    </ul>
+                </div>
+                <button onclick="resetAllGame()" class="w-full py-3 bg-amber-600 text-white font-bold rounded-2xl">홈으로</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ALERT DIALOG BOX -->
+    <div id="msg-box" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-5 text-center border-2 border-amber-200">
+            <span id="msg-icon" class="text-4xl">💡</span>
+            <p id="msg-text" class="text-sm my-4 font-medium"></p>
+            <button onclick="closeMsgBox()" class="w-full py-2 bg-amber-600 text-white font-bold rounded-xl">확인</button>
+        </div>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, duration, type = "sine") {
+            try { 
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator(); 
+                const gain = audioCtx.createGain();
+                osc.type = type; 
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain); 
+                gain.connect(audioCtx.destination);
+                osc.start(); 
+                osc.stop(audioCtx.currentTime + duration); 
+            } catch(e){}
+        }
+        const soundSuccess = () => { playTone(523, 0.1); setTimeout(()=>playTone(659, 0.15), 80); };
+        const soundFail = () => playTone(220, 0.15, "sawtooth");
+        const soundCollect = () => playTone(587, 0.08);
+        const soundStageUp = () => [261, 329, 392, 523].forEach((f,i)=>setTimeout(()=>playTone(f, 0.12, "square"), i*100));
+
+        const keysCollected = { game1: false, game2: false, game3: false, game4: false };
+
+        function switchScreen(id) {
+            stopGame1();
+            stopGame4();
+            ['hub','game1','game2','game3','game4','victory'].forEach(s => document.getElementById('screen-'+s).classList.add('hidden'));
+            document.getElementById('screen-'+id).classList.remove('hidden');
+            if(id === 'game1') initGame1();
+            if(id === 'game2') initGame2();
+            if(id === 'game3') initGame3();
+            if(id === 'game4') initGame4();
+            updateKeys();
+        }
+
+        function updateKeys() {
+            [1,2,3,4].forEach(i => {
+                const el = document.getElementById('status-key-'+i);
+                if(keysCollected['game'+i]) {
+                    el.classList.remove('opacity-40');
+                    el.classList.add('opacity-100','font-bold','text-amber-600');
+                }
+            });
+            if(Object.values(keysCollected).every(v=>v)) {
+                setTimeout(()=>switchScreen('victory'), 1200);
+            }
+        }
+
+        function showMsg(t, i='💡') { 
+            document.getElementById('msg-icon').innerText=i; 
+            document.getElementById('msg-text').innerText=t; 
+            document.getElementById('msg-box').classList.remove('hidden'); 
+        }
+        function closeMsgBox() { 
+            document.getElementById('msg-box').classList.add('hidden'); 
+        }
+        function resetAllGame() { 
+            Object.keys(keysCollected).forEach(k=>keysCollected[k]=false); 
+            switchScreen('hub'); 
+        }
+
+        // ==========================================
+        // GAME 1: Catcher (바구니 빵 받기)
+        // ==========================================
+        let g1Canvas, g1Ctx, g1LoopId, g1Score=0, g1Lives=3, g1IsPlaying=false, g1Items=[], g1Keys={left:false,right:false};
+        let g1Player = { x:0, w:75, h:55, speed:13 };
+        
+        function initGame1() {
+            g1Canvas=document.getElementById('g1-canvas'); 
+            g1Ctx=g1Canvas.getContext('2d');
+            g1Canvas.width=g1Canvas.parentElement.clientWidth; 
+            g1Canvas.height=g1Canvas.parentElement.clientHeight;
+            g1Player.x=g1Canvas.width/2 - g1Player.w/2; 
+            g1Score=0; 
+            g1Lives=3; 
+            g1Items=[]; 
+            g1IsPlaying=false;
+            document.getElementById('g1-score').innerText=0; 
+            document.getElementById('g1-lives').innerText=3;
+            document.getElementById('g1-overlay').classList.remove('hidden');
+            
+            const L=document.getElementById('g1-left-btn'), R=document.getElementById('g1-right-btn');
+            
+            // PC 마우스 드래그/클릭 및 태블릿 터치조작에 모두 대응하도록 완벽한 하이브리드 리스너 연동
+            L.onmousedown=(e)=>{e.preventDefault(); g1Keys.left=true;}; 
+            L.onmouseup=()=>g1Keys.left=false;
+            L.onmouseleave=()=>g1Keys.left=false;
+            L.ontouchstart=(e)=>{e.preventDefault(); g1Keys.left=true;}; 
+            L.ontouchend=()=>g1Keys.left=false;
+            L.ontouchcancel=()=>g1Keys.left=false;
+
+            R.onmousedown=(e)=>{e.preventDefault(); g1Keys.right=true;}; 
+            R.onmouseup=()=>g1Keys.right=false;
+            R.onmouseleave=()=>g1Keys.right=false;
+            R.ontouchstart=(e)=>{e.preventDefault(); g1Keys.right=true;}; 
+            R.ontouchend=()=>g1Keys.right=false;
+            R.ontouchcancel=()=>g1Keys.right=false;
+            
+            window.addEventListener('keydown', handleKeyDownG1);
+            window.addEventListener('keyup', handleKeyUpG1);
+        }
+
+        function handleKeyDownG1(e) {
+            if(e.key === 'ArrowLeft') g1Keys.left = true;
+            if(e.key === 'ArrowRight') g1Keys.right = true;
+        }
+
+        function handleKeyUpG1(e) {
+            if(e.key === 'ArrowLeft') g1Keys.left = false;
+            if(e.key === 'ArrowRight') g1Keys.right = false;
+        }
+
+        function startGame1() { 
+            document.getElementById('g1-overlay').classList.add('hidden'); 
+            g1IsPlaying=true; 
+            g1Loop(); 
+        }
+        function stopGame1() { 
+            g1IsPlaying=false; 
+            cancelAnimationFrame(g1LoopId); 
+            window.removeEventListener('keydown', handleKeyDownG1);
+            window.removeEventListener('keyup', handleKeyUpG1);
+        }
+        
+        function spawnG1() {
+            if(Math.random()<0.035) {
+                const isG = Math.random()<0.65;
+                g1Items.push({ 
+                    x:Math.random()*(g1Canvas.width-60)+30, 
+                    y:-40, 
+                    vy:(2.5+Math.random()*2)/1.5 + (g1Score/350), 
+                    t:isG?['🍞','🥐','🥯','🥞'][Math.floor(Math.random()*4)]:['💔','🤫','😡','🌪️'][Math.floor(Math.random()*4)],
+                    isG:isG, 
+                    l:isG?['고마워','사랑해','힘내자','괜찮아'][Math.floor(Math.random()*4)]:['미워!','시끄러!','짜증나!','저리가!'][Math.floor(Math.random()*4)] 
+                });
+            }
+        }
+        
+        function g1Loop() {
+            if(!g1IsPlaying) return;
+            g1Ctx.clearRect(0,0,g1Canvas.width,g1Canvas.height);
+            if(g1Keys.left) g1Player.x-=g1Player.speed; 
+            if(g1Keys.right) g1Player.x+=g1Player.speed;
+            g1Player.x = Math.max(0, Math.min(g1Canvas.width-g1Player.w, g1Player.x));
+            
+            // Draw Basket
+            const bx=g1Player.x, by=g1Canvas.height-g1Player.h+15, bw=g1Player.w, bh=g1Player.h-22;
+            g1Ctx.strokeStyle='#b45309'; g1Ctx.lineWidth=4; g1Ctx.beginPath(); g1Ctx.arc(bx+bw/2, by+4, bw/2.3, Math.PI, 0); g1Ctx.stroke();
+            g1Ctx.fillStyle='#d97706'; g1Ctx.beginPath(); g1Ctx.moveTo(bx,by); g1Ctx.lineTo(bx+bw,by); g1Ctx.quadraticCurveTo(bx+bw-4,by+bh,bx+bw-12,by+bh); g1Ctx.lineTo(bx+12,by+bh); g1Ctx.quadraticCurveTo(bx+4,by+bh,bx,by); g1Ctx.fill(); g1Ctx.stroke();
+            
+            spawnG1();
+            g1Items.forEach((it, i) => {
+                it.y += it.vy; 
+                g1Ctx.font="39px Arial"; 
+                g1Ctx.textAlign="center"; 
+                g1Ctx.fillText(it.t, it.x, it.y);
+                g1Ctx.font="bold 16px Nanum Gothic"; 
+                g1Ctx.fillStyle=it.isG?'#065f46':'#991b1b'; 
+                g1Ctx.fillText(it.l, it.x, it.y+22);
+                
+                if(it.y+15 >= by-5 && it.x >= bx-20 && it.x <= bx+bw+20 && it.y <= by+bh+10) {
+                    g1Score += it.isG?10:-15; 
+                    g1Score=Math.max(0, g1Score); 
+                    document.getElementById('g1-score').innerText=g1Score;
+                    if(it.isG) soundCollect(); else { soundFail(); g1Lives--; document.getElementById('g1-lives').innerText=g1Lives; }
+                    g1Items.splice(i,1);
+                    if(g1Score>=150) { 
+                        stopGame1(); 
+                        keysCollected.game1=true; 
+                        soundStageUp(); 
+                        showMsg("1단계 다정한 빵 받기 성공! 🔑"); 
+                        switchScreen('hub'); 
+                    }
+                    if(g1Lives<=0) { 
+                        stopGame1(); 
+                        showMsg("하트가 모두 닳았어요! 다시 도전해봐요!","😢"); 
+                        initGame1(); 
+                    }
+                } else if(it.y > g1Canvas.height+50) g1Items.splice(i,1);
+            });
+            g1LoopId = requestAnimationFrame(g1Loop);
+        }
+
+        // ==========================================
+        // GAME 2: Words (다정한 말 완성하기)
+        // ==========================================
+        let g2S=1, g2Sel=[];
+        const g2D = [
+            {t:["고","마","워"], m:"고마움을 전해요.", o:["마","고","워","랑","해","나"]},
+            {t:["사","랑","해"], m:"따뜻한 마음을 전해요.", o:["해","고","랑","워","사","기"]},
+            {t:["힘","내","요"], m:"기운을 북돋워 주는 한마디.", o:["내","해","힘","요","너","괜"]},
+            {t:["괜","찬","아"], m:"지친 마음에 건네는 가벼운 토닥임.", o:["괜","해","찬","랑","아","기"]},
+            {t:["반","가","워"], m:"친근하게 반겨주는 인사!", o:["반","고","가","워","나","너"]}
+        ];
+        function initGame2() { g2S=1; setupG2(); }
+        
+        function setupG2() {
+            g2Sel=[]; 
+            const d=g2D[g2S-1]; 
+            document.getElementById('g2-stage-txt').innerText=`${g2S}/5`; 
+            document.getElementById('g2-meaning').innerText=d.m;
+            const target=document.getElementById('g2-target-word-container'); 
+            target.innerHTML='';
+            d.t.forEach((c,i)=>{ 
+                const s=document.createElement('div'); 
+                s.id=`g2-slot-${i}`; 
+                s.className="w-16 h-16 bg-amber-50 border-4 border-dashed border-amber-300 rounded-2xl flex items-center justify-center text-2xl font-bold text-transparent transition-all"; 
+                s.innerText=c; 
+                target.appendChild(s); 
+            });
+            renderPool();
+        }
+        
+        function renderPool() {
+            const d=g2D[g2S-1], p=document.getElementById('g2-pool-container'); 
+            p.innerHTML='';
+            d.o.forEach(c => {
+                const used = g2Sel.includes(c); 
+                const b=document.createElement('button'); 
+                b.innerText=c;
+                b.className=`w-14 h-14 bg-amber-100 border-2 border-amber-600 rounded-xl text-xl font-bold letter-tile ${used?'opacity-20 pointer-events-none':''}`;
+                b.onclick=()=> {
+                    if(c === d.t[g2Sel.length]) { 
+                        soundCollect(); 
+                        g2Sel.push(c); 
+                        document.getElementById(`g2-slot-${g2Sel.length-1}`).className="w-16 h-16 bg-amber-500 border-4 border-amber-600 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shadow-md transform scale-105"; 
+                        renderPool();
+                        if(g2Sel.length===d.t.length) { 
+                            soundSuccess(); 
+                            setTimeout(()=>{ 
+                                if(g2S<5){ g2S++; setupG2(); } 
+                                else{ keysCollected.game2=true; soundStageUp(); showMsg("2단계 다정한 말 완성하기 성공! 🔑"); switchScreen('hub'); }
+                            },800); 
+                        }
+                    } else { 
+                        soundFail(); 
+                        document.getElementById('g2-target-word-container').classList.add('shake-anim'); 
+                        setTimeout(()=>document.getElementById('g2-target-word-container').classList.remove('shake-anim'),500); 
+                    }
+                }; 
+                p.appendChild(b);
+            });
+        }
+        function resetGame2Stage() { setupG2(); }
+
+        // ==========================================
+        // GAME 3: Etiquette (공공장소 바른 행동 찾기)
+        // ==========================================
+        let g3S=1;
+        const g3D=[
+            {e:"📚",l:"도서관",d:"조용한 도서관! 어떻게 행동할까요?", o:[{t:"소곤소곤 속삭이듯이 아주 작게 말해요.",c:true},{t:"이름이 멀리 들리도록 큰 소리로 불러요.",c:false}]},
+            {e:"🚌",l:"버스 안",d:"사람이 많은 버스 안! 영상 소리는 어떻게 해야 할까요?", o:[{t:"소리를 가장 크게 켜서 다 같이 들어요.",c:false},{t:"이어폰을 끼거나 완전히 무음으로 설정해요.",c:true}]},
+            {e:"🍞",l:"다정한 빵집",d:"맛있는 빵을 담을 때는 어떻게 하나요?", o:[{t:"전용 집게로 위생적으로 조심조심 담아요.",c:true},{t:"손가락으로 말랑말랑한지 꾹 찔러봐요.",c:false}]},
+            {e:"🖼️",l:"미술관 전시관",d:"예쁜 그림을 관람할 때 어울리는 에티켓은?", o:[{t:"재미로 작품 구석에 내 낙서를 적어봐요.",c:false},{t:"한 걸음 뒤로 물러나 눈으로 조용히 봐요.",c:true}]}
+        ];
+        function initGame3() { g3S=1; setupG3(); }
+        
+        function setupG3() {
+            const d=g3D[g3S-1]; 
+            document.getElementById('g3-stage-txt').innerText=`${g3S}/4`; 
+            document.getElementById('g3-location-emoji').innerText=d.e; 
+            document.getElementById('g3-location-title').innerText=d.l; 
+            document.getElementById('g3-scenario-desc').innerText=d.d;
+            d.o.forEach((opt,i)=>{ 
+                document.getElementById('g3-text-'+i).innerText=opt.t; 
+                document.getElementById('g3-btn-'+i).className="w-full p-4 bg-white border-2 border-amber-200 rounded-xl flex items-center gap-3 active:scale-95 transition-transform"; 
+            });
+        }
+        
+        function chooseG3Option(i) {
+            const d=g3D[g3S-1], opt=d.o[i];
+            if(opt.c) { 
+                soundSuccess(); 
+                document.getElementById('g3-btn-'+i).classList.add('border-emerald-500','bg-emerald-50'); 
+                setTimeout(()=>{ 
+                    if(g3S<4){ g3S++; setupG3(); } 
+                    else { keysCollected.game3=true; soundStageUp(); showMsg("3단계 공공장소 바른 행동 찾기 성공! 🔑"); switchScreen('hub'); }
+                },1000); 
+            } else { 
+                soundFail(); 
+                document.getElementById('g3-btn-'+i).classList.add('shake-anim','border-red-400','bg-red-50'); 
+                setTimeout(()=>document.getElementById('g3-btn-'+i).classList.remove('shake-anim'),600); 
+            }
+        }
+
+        // ==========================================
+        // GAME 4: Maze (다정한 미로 찾기)
+        // ==========================================
+        let g4Canvas, g4Ctx, g4LoopId, g4IsPlaying=false, g4Stage=1;
+        let g4StartPos = { x: 1, y: 1 };
+        let g4Player = { x: 1, y: 1 };
+        let g4OvenPos = { x: 6, y: 5 };
+        let g4Items = []; 
+        let g4Monsters = []; // { x, y, path: [], pathIndex: 0 }
+        
+        // 0: 길, 1: 벽, 2: 대피소
+        const g4Maps = {
+            1: [
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 0, 0, 0, 1, 2, 0, 1], 
+                [1, 1, 1, 0, 1, 0, 1, 1], 
+                [1, 2, 0, 0, 0, 0, 2, 1], 
+                [1, 0, 1, 0, 1, 1, 1, 1], 
+                [1, 0, 2, 0, 0, 0, 0, 1], 
+                [1, 1, 1, 0, 1, 1, 1, 1], 
+                [1, 1, 1, 1, 1, 1, 1, 1]
+            ],
+            2: [
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 0, 0, 0, 1, 2, 0, 0, 0, 1], 
+                [1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+                [1, 2, 0, 0, 0, 0, 0, 1, 2, 1], 
+                [1, 0, 1, 1, 1, 1, 0, 1, 0, 1], 
+                [1, 0, 0, 0, 2, 1, 0, 1, 0, 1], 
+                [1, 1, 1, 1, 0, 1, 0, 1, 0, 1],
+                [1, 2, 0, 0, 0, 0, 0, 0, 0, 1], 
+                [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+                [1, 0, 0, 0, 2, 0, 0, 1, 0, 1], 
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ],
+            3: [
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 1], 
+                [1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1], 
+                [1, 2, 0, 0, 0, 0, 0, 1, 2, 1, 0, 1], 
+                [1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1], 
+                [1, 0, 2, 0, 0, 1, 0, 0, 0, 1, 0, 1], 
+                [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1], 
+                [1, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1], 
+                [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1], 
+                [1, 0, 0, 0, 2, 0, 0, 0, 0, 1, 2, 1], 
+                [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1], 
+                [1, 0, 0, 0, 2, 0, 0, 2, 0, 1, 0, 1], 
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ]
+        };
+
+        function initGame4() {
+            g4Canvas = document.getElementById('g4-canvas');
+            g4Ctx = g4Canvas.getContext('2d');
+            g4Stage = 1;
+            g4IsPlaying = false;
+            document.getElementById('g4-overlay').classList.remove('hidden');
+            setupG4Stage();
+            bindG4Controls();
+        }
+
+        function setupG4Stage() {
+            g4StartPos = { x: 1, y: 1 };
+            g4Player = { x: 1, y: 1 };
+            
+            document.getElementById('g4-stage-txt').innerText = `${g4Stage} / 3`;
+            document.getElementById('g4-items-count').innerText = "0";
+            document.getElementById('g4-badge-fire').classList.add('opacity-30');
+            document.getElementById('g4-badge-sugar').classList.add('opacity-30');
+            document.getElementById('g4-badge-cherry').classList.add('opacity-30');
+            document.getElementById('g4-oven-status').innerText = "잠김";
+            document.getElementById('g4-oven-status').className = "text-[10px] text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full font-bold";
+
+            const map = g4Maps[g4Stage];
+
+            if (g4Stage === 1) {
+                g4OvenPos = { x: 6, y: 5 }; 
+                g4Items = [
+                    { x: 6, y: 1, type: 'fire', gathered: false, emoji: '🔥' },
+                    { x: 1, y: 5, type: 'sugar', gathered: false, emoji: '🍯' },
+                    { x: 3, y: 6, type: 'cherry', gathered: false, emoji: '🍒' }
+                ];
+                g4Monsters = [
+                    { x: 2, y: 3, pathIndex: 0, path: [
+                        {x:2, y:3}, {x:3, y:3}, {x:4, y:3}, {x:5, y:3},
+                        {x:4, y:3}, {x:3, y:3}
+                    ]}
+                ];
+            } else if (g4Stage === 2) {
+                g4OvenPos = { x: 8, y: 9 }; 
+                g4Items = [
+                    { x: 8, y: 1, type: 'fire', gathered: false, emoji: '🔥' },
+                    { x: 1, y: 5, type: 'sugar', gathered: false, emoji: '🍯' },
+                    { x: 1, y: 9, type: 'cherry', gathered: false, emoji: '🍒' }
+                ];
+                g4Monsters = [
+                    { x: 2, y: 3, pathIndex: 0, path: [
+                        {x:2, y:3}, {x:3, y:3}, {x:4, y:3}, {x:5, y:3}, {x:6, y:3},
+                        {x:5, y:3}, {x:4, y:3}, {x:3, y:3}
+                    ]},
+                    { x: 2, y: 7, pathIndex: 0, path: [
+                        {x:2, y:7}, {x:3, y:7}, {x:4, y:7}, {x:5, y:7}, {x:6, y:7}, {x:7, y:7}, {x:8, y:7},
+                        {x:7, y:7}, {x:6, y:7}, {x:5, y:7}, {x:4, y:7}, {x:3, y:7}
+                    ]}
+                ];
+            } else if (g4Stage === 3) {
+                g4OvenPos = { x: 10, y: 11 }; 
+                g4Items = [
+                    { x: 10, y: 1, type: 'fire', gathered: false, emoji: '🔥' },
+                    { x: 1, y: 5, type: 'sugar', gathered: false, emoji: '🍯' },
+                    { x: 1, y: 11, type: 'cherry', gathered: false, emoji: '🍒' }
+                ];
+                g4Monsters = [
+                    { x: 2, y: 3, pathIndex: 0, path: [
+                        {x:2, y:3}, {x:3, y:3}, {x:4, y:3}, {x:5, y:3}, {x:6, y:3},
+                        {x:5, y:3}, {x:4, y:3}, {x:3, y:3}
+                    ]},
+                    { x: 2, y: 7, pathIndex: 0, path: [
+                        {x:2, y:7}, {x:3, y:7}, {x:4, y:7}, {x:5, y:7}, {x:6, y:7}, {x:7, y:7}, {x:8, y:7}, {x:9, y:7}, {x:10, y:7},
+                        {x:9, y:7}, {x:8, y:7}, {x:7, y:7}, {x:6, y:7}, {x:5, y:7}, {x:4, y:7}, {x:3, y:7}
+                    ]}
+                ];
+            }
+
+            drawG4();
+        }
+
+        function startGame4() {
+            document.getElementById('g4-overlay').classList.add('hidden');
+            g4IsPlaying = true;
+            g4Loop();
+        }
+
+        function stopGame4() {
+            g4IsPlaying = false;
+            cancelAnimationFrame(g4LoopId);
+            window.removeEventListener('keydown', handleKeyDownG4);
+        }
+
+        function handleKeyDownG4(e) {
+            if(!g4IsPlaying) return;
+            if (e.key === 'ArrowUp') movePlayer(0, -1);
+            if (e.key === 'ArrowDown') movePlayer(0, 1);
+            if (e.key === 'ArrowLeft') movePlayer(-1, 0);
+            if (e.key === 'ArrowRight') movePlayer(1, 0);
+        }
+
+        function bindG4Controls() {
+            window.removeEventListener('keydown', handleKeyDownG4);
+            window.addEventListener('keydown', handleKeyDownG4);
+
+            const upBtn = document.getElementById('g4-up');
+            const downBtn = document.getElementById('g4-down');
+            const leftBtn = document.getElementById('g4-left');
+            const rightBtn = document.getElementById('g4-right');
+
+            function bindBtn(btn, dx, dy) {
+                const triggerAction = (e) => {
+                    e.preventDefault();
+                    if (!g4IsPlaying) return;
+                    movePlayer(dx, dy);
+                };
+                btn.onmousedown = triggerAction;
+                btn.ontouchstart = triggerAction;
+            }
+
+            bindBtn(upBtn, 0, -1);
+            bindBtn(downBtn, 0, 1);
+            bindBtn(leftBtn, -1, 0);
+            bindBtn(rightBtn, 1, 0);
+        }
+
+        function movePlayer(dx, dy) {
+            const map = g4Maps[g4Stage];
+            const nextX = g4Player.x + dx;
+            const nextY = g4Player.y + dy;
+
+            if (map[nextY] && (map[nextY][nextX] === 0 || map[nextY][nextX] === 2)) {
+                g4Player.x = nextX;
+                g4Player.y = nextY;
+                soundCollect();
+                checkG4Collisions();
+            }
+        }
+
+        function checkG4Collisions() {
+            g4Items.forEach(it => {
+                if (!it.gathered && it.x === g4Player.x && it.y === g4Player.y) {
+                    it.gathered = true;
+                    soundSuccess();
+                    
+                    if (it.type === 'fire') document.getElementById('g4-badge-fire').classList.remove('opacity-30');
+                    if (it.type === 'sugar') document.getElementById('g4-badge-sugar').classList.remove('opacity-30');
+                    if (it.type === 'cherry') document.getElementById('g4-badge-cherry').classList.remove('opacity-30');
+
+                    const gatheredCount = g4Items.filter(i => i.gathered).length;
+                    document.getElementById('g4-items-count').innerText = gatheredCount;
+
+                    if (gatheredCount === 3) {
+                        document.getElementById('g4-oven-status').innerText = "열림! 🏡";
+                        document.getElementById('g4-oven-status').className = "text-[10px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-bold animate-pulse";
+                    }
+                }
+            });
+
+            const gatheredAll = g4Items.every(i => i.gathered);
+            if (g4Player.x === g4OvenPos.x && g4Player.y === g4OvenPos.y) {
+                if (gatheredAll) {
+                    stopGame4();
+                    soundStageUp();
+                    
+                    if (g4Stage < 3) {
+                        showMsg(`${g4Stage}단계 다정한 빵집에 배달 완료! 다음 동네 미로로 가볼까요?`, "🎉");
+                        g4Stage++;
+                        setupG4Stage();
+                        setTimeout(() => {
+                            g4IsPlaying = true;
+                            g4Loop();
+                        }, 1500);
+                    } else {
+                        keysCollected.game4 = true;
+                        showMsg("축하합니다! 마지막 동네의 다정한 빵집까지 배달을 성공적으로 마쳤어요! 🔑", "🌈");
+                        switchScreen('hub');
+                    }
+                } else {
+                    soundFail();
+                    showMsg("아직 다정한 재료(🔥, 🍯, 🍒)들을 다 모으지 못했어요! 미로 구석구석을 탐험해서 재료를 먼저 찾아주세요.", "🔑");
+                    g4Player.x = g4StartPos.x;
+                    g4Player.y = g4StartPos.y;
+                }
+            }
+        }
+
+        let monsterUpdateTimer = 0;
+        function g4Loop() {
+            if (!g4IsPlaying) return;
+
+            monsterUpdateTimer++;
+            if (monsterUpdateTimer >= 55) {
+                monsterUpdateTimer = 0;
+                moveMonsters();
+            }
+
+            drawG4();
+            g4LoopId = requestAnimationFrame(g4Loop);
+        }
+
+        function moveMonsters() {
+            g4Monsters.forEach(m => {
+                m.pathIndex = (m.pathIndex + 1) % m.path.length;
+                const nextPos = m.path[m.pathIndex];
+                m.x = nextPos.x;
+                m.y = nextPos.y;
+
+                if (m.x === g4Player.x && m.y === g4Player.y) {
+                    soundFail();
+                    g4Player = { x: g4StartPos.x, y: g4StartPos.y }; 
+                    showMsg("어머나! 먼지 괴물(👾)과 부딪혔어요. 안전한 '출발' 지점으로 돌아갑니다!", "🥺");
+                }
+            });
+        }
+
+        function drawG4() {
+            const map = g4Maps[g4Stage];
+            const size = map.length;
+            const cellSize = g4Canvas.width / size;
+
+            g4Ctx.clearRect(0, 0, g4Canvas.width, g4Canvas.height);
+
+            // 1. 미로 격자 판 렌더링
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const cx = c * cellSize;
+                    const cy = r * cellSize;
+
+                    if (map[r][c] === 1) {
+                        g4Ctx.fillStyle = '#9a3412';
+                        g4Ctx.beginPath();
+                        g4Ctx.roundRect(cx + 1, cy + 1, cellSize - 2, cellSize - 2, 4);
+                        g4Ctx.fill();
+                    } else if (map[r][c] === 2) {
+                        g4Ctx.fillStyle = '#d1fae5'; 
+                        g4Ctx.fillRect(cx, cy, cellSize, cellSize);
+                        
+                        g4Ctx.strokeStyle = '#34d399'; 
+                        g4Ctx.lineWidth = 1.5;
+                        g4Ctx.strokeRect(cx + 1, cy + 1, cellSize - 2, cellSize - 2);
+
+                        g4Ctx.font = `${cellSize * 0.45}px Arial`;
+                        g4Ctx.textAlign = "center";
+                        g4Ctx.textBaseline = "middle";
+                        g4Ctx.fillText('🍃', cx + cellSize/2, cy + cellSize/2);
+                    } else {
+                        g4Ctx.fillStyle = '#fffbeb';
+                        g4Ctx.fillRect(cx, cy, cellSize, cellSize);
+                        
+                        g4Ctx.strokeStyle = '#fef3c7';
+                        g4Ctx.lineWidth = 1;
+                        g4Ctx.strokeRect(cx, cy, cellSize, cellSize);
+                    }
+                }
+            }
+
+            // 2. 출발지 라벨
+            const startX = (g4StartPos.x + 0.5) * cellSize;
+            const startY = (g4StartPos.y + 0.5) * cellSize;
+            g4Ctx.fillStyle = '#059669';
+            g4Ctx.font = `bold ${cellSize * 0.28}px Nanum Gothic`;
+            g4Ctx.textAlign = "center";
+            g4Ctx.textBaseline = "middle";
+            g4Ctx.fillText("출발", startX, startY - (cellSize * 0.25));
+
+            // 3. 몬스터 순찰 점선 그리기
+            g4Monsters.forEach(m => {
+                g4Ctx.strokeStyle = 'rgba(168, 85, 247, 0.45)'; 
+                g4Ctx.lineWidth = 3;
+                g4Ctx.setLineDash([4, 4]);
+                g4Ctx.beginPath();
+                m.path.forEach((pt, idx) => {
+                    const px = (pt.x + 0.5) * cellSize;
+                    const py = (pt.y + 0.5) * cellSize;
+                    if (idx === 0) g4Ctx.moveTo(px, py);
+                    else g4Ctx.lineTo(px, py);
+                });
+                g4Ctx.stroke();
+                g4Ctx.setLineDash([]); 
+            });
+
+            // 4. 아이템 그리기
+            g4Items.forEach(it => {
+                if (!it.gathered) {
+                    g4Ctx.font = `${cellSize * 0.55}px Arial`;
+                    g4Ctx.textAlign = "center";
+                    g4Ctx.textBaseline = "middle";
+                    g4Ctx.fillText(it.emoji, (it.x + 0.5) * cellSize, (it.y + 0.5) * cellSize);
+                }
+            });
+
+            // 5. 도착지 (다정한 빵집)
+            const gatheredAll = g4Items.every(i => i.gathered);
+            const ovenX = (g4OvenPos.x + 0.5) * cellSize;
+            const ovenY = (g4OvenPos.y + 0.5) * cellSize;
+            
+            g4Ctx.fillStyle = gatheredAll ? '#2563eb' : '#4b5563';
+            g4Ctx.font = `bold ${cellSize * 0.25}px Nanum Gothic`;
+            g4Ctx.textAlign = "center";
+            g4Ctx.textBaseline = "middle";
+            g4Ctx.fillText("도착", ovenX, ovenY - (cellSize * 0.3));
+
+            g4Ctx.font = `${cellSize * 0.65}px Arial`;
+            g4Ctx.fillText(gatheredAll ? '🏡' : '🚪', ovenX, ovenY + (cellSize * 0.15));
+
+            // 6. 순찰 괴물 그리기
+            g4Monsters.forEach(m => {
+                g4Ctx.font = `${cellSize * 0.55}px Arial`;
+                g4Ctx.textAlign = "center";
+                g4Ctx.textBaseline = "middle";
+                g4Ctx.fillText('👾', (m.x + 0.5) * cellSize, (m.y + 0.5) * cellSize);
+            });
+
+            // 7. 식빵이 플레이어
+            g4Ctx.font = `${cellSize * 0.65}px Arial`;
+            g4Ctx.textAlign = "center";
+            g4Ctx.textBaseline = "middle";
+            g4Ctx.fillText('🍞', (g4Player.x + 0.5) * cellSize, (g4Player.y + 0.5) * cellSize);
+        }
+
+        // 앱 초기 실행
+        switchScreen('hub');
+    </script>
+</body>
+</html>

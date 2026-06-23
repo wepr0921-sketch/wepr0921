@@ -127,14 +127,14 @@
                 <button onclick="switchScreen('hub')" class="text-amber-700 text-sm font-bold">🏠 홈</button>
                 <div class="flex gap-4">
                     <span class="text-xs font-bold text-rose-600">❤️ <span id="g1-lives">3</span></span>
-                    <span class="text-xs font-bold text-amber-800">점수: <span id="g1-score">0</span> / 100</span>
+                    <span class="text-xs font-bold text-amber-800">점수: <span id="g1-score">0</span> / 150</span>
                 </div>
             </div>
             <div class="flex-grow relative my-2 overflow-hidden bg-gradient-to-b from-sky-50 to-amber-50/20 rounded-2xl border-2 border-amber-200 h-[450px]">
                 <canvas id="g1-canvas" class="w-full h-full block"></canvas>
                 <div id="g1-overlay" class="absolute inset-0 bg-amber-950/80 flex flex-col items-center justify-center text-white p-4 text-center">
                     <h4 class="text-2xl font-bold font-cozy text-amber-200 mb-2">1단계: 다정한 빵 받기</h4>
-                    <p class="text-xs mb-4">따뜻한 빵(🍞)은 담고, 차가운 말(💔)은 피해요!<br>목표: 100점 (엄청 쉬워졌어요!)</p>
+                    <p class="text-xs mb-4">따뜻한 빵(🍞)은 담고, 차가운 말(💔)은 피해요!<br>목표: 150점 (천천히 내려와서 아주 쉬워요!)</p>
                     <button onclick="startGame1()" class="px-6 py-2 bg-amber-500 text-white font-bold rounded-xl shadow-md">시작</button>
                 </div>
             </div>
@@ -477,7 +477,7 @@
                     document.getElementById('g1-score').innerText=g1Score;
                     if(it.isG) soundCollect(); else { soundFail(); g1Lives--; document.getElementById('g1-lives').innerText=g1Lives; }
                     g1Items.splice(i,1);
-                    if(g1Score>=100) { 
+                    if(g1Score>=150) { 
                         stopGame1(); 
                         keysCollected.game1=true; 
                         soundStageUp(); 
